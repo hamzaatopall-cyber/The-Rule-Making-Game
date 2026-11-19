@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Rule-Making Game</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#33445b;--text:#edf3fa;--muted:#a9b8ca;--accent:#83b7ff;--green:#6fd3a5;--red:#ff927e;--yellow:#f4ca72}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,#101722,#172437);color:var(--text);font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px max(20px,calc((100% - 1140px)/2));border-bottom:1px solid var(--line);background:#111b29dd;position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}
+.kicker{color:var(--accent);font-size:.75rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(1.6rem,4.5vw,2.6rem);line-height:1.08;margin:5px 0 8px}
+h2{font-size:1.3rem;margin:0 0 10px}
+h3{font-size:1rem;margin:0 0 7px}
+p{margin:7px 0;color:var(--muted)}
+main{max-width:1140px;margin:22px auto;padding:0 18px 70px}
+.topline{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:5px 12px;color:var(--muted);font-size:.8rem;background:#111c2a}
+.pill.live{border-color:#39795e;color:var(--green)}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 14px;transition:.15s}
+button:hover{border-color:var(--accent);transform:translateY(-1px)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+button.primary{background:var(--accent);color:#102033;border-color:var(--accent);font-weight:800}
+button.good{border-color:#39795e;background:#183a31;color:#c9f2df}
+button.warn{border-color:#805e2b;background:#3c3020;color:#f4e4c2}
+button.active{background:#29476a;border-color:var(--accent)}
+button.sm{padding:6px 10px;font-size:.82rem;border-radius:8px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:linear-gradient(160deg,var(--panel),#172334);border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 12px 28px #0002}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
+@media(max-width:820px){.span8,.span6,.span4{grid-column:span 12}header{position:static}}
+.muted{color:var(--muted)}.small{font-size:.85rem}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:540px){.statrow{grid-template-columns:1fr}}
+.stat{background:#111c2a;border:1px solid var(--line);border-radius:13px;padding:12px}
+.stat strong{display:block;font-size:1.55rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.75rem;color:var(--muted)}
+.bar{height:8px;background:#0d1723;border-radius:99px;overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .35s ease}
+.choice{display:flex;gap:10px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:#111c2a;cursor:pointer;transition:.15s}
+.choice:hover{border-color:#4b6587}
+.choice input{margin-top:5px;accent-color:#83b7ff;transform:scale(1.2)}
+.choice b{display:block;color:var(--text)}
+.choice span{color:var(--muted);font-size:.86rem}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.notice{border-left:3px solid var(--yellow);padding:10px 13px;background:#332c20;border-radius:0 10px 10px 0;color:#f4e4c2;margin:12px 0}
+.success{border-left-color:var(--green);background:#18352e;color:#c9f2df}
+.danger{border-left-color:var(--red);background:#3b2427;color:#ffd8d1}
+.info{border-left-color:var(--accent);background:#192c44;color:#d6e8ff}
+.hidden{display:none!important}
+.rolehead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tag{font-size:.72rem;border-radius:99px;padding:4px 9px;background:#29476a;color:#cfe4ff;font-weight:700}
+.tag.g1{background:#1f3f66;color:#9cc7ff}
+.tag.g2{background:#1d4239;color:#8ae6bd}
+.tag.g3{background:#47361e;color:#f6d289}
+.timer{font-size:1.65rem;font-weight:800;font-variant-numeric:tabular-nums}
+input[type=text],input[type=password],textarea{width:100%;background:#101b29;border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--text);font:inherit}
+footer{color:var(--muted);font-size:.78rem;text-align:center;padding:24px}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+
+/* QR & Multiplayer specific layouts */
+.qr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+@media(max-width:860px){.qr-grid{grid-template-columns:1fr}}
+.qr-box{background:#111c2a;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+.qr-canvas{background:#ffffff;padding:10px;border-radius:10px;margin:10px auto;display:inline-flex;align-items:center;justify-content:center;min-width:148px;min-height:148px}
+.qr-canvas img,.qr-canvas canvas{display:block;max-width:100%;height:auto}
+.status-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+@media(max-width:700px){.status-row{grid-template-columns:1fr}}
+.status-card{background:#111c2a;border:1px solid var(--line);border-radius:12px;padding:12px}
+.status-badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.75rem;font-weight:700;margin-top:4px}
+.status-wait{background:#2a3545;color:var(--muted)}
+.status-ready{background:#183a31;color:var(--green);border:1px solid #39795e}
+.modal-backdrop{position:fixed;inset:0;background:#080d14cc;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:50;padding:18px}
+.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:440px;width:100%;box-shadow:0 20px 50px #0008}
+.toast{position:fixed;bottom:20px;right:20px;background:#1e324a;border:1px solid var(--accent);color:var(--text);padding:11px 16px;border-radius:12px;box-shadow:0 10px 25px #0006;z-index:60;font-size:.9rem;max-width:340px}
+.pin-box{display:inline-flex;align-items:center;gap:8px;background:#111c2a;border:1px dashed var(--accent);padding:6px 12px;border-radius:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="kicker">Interactive classroom simulation · 20 minutes</div>
+ <div class="topline">
+  <div>
+   <h1>The Rule-Making Game</h1>
+   <p>When does governing through rules turn into governing through red tape — and who bears the costs?</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+   <span class="pill live" id="connPill">Connecting live room...</span>
+   <span class="pill" id="rolePill">Role: Presenter</span>
+   <span class="pill" id="roundPill">Rounds completed · 0/3</span>
+  </div>
+ </div>
+</header>
+
+<!-- Custom Modal (replaces alert/confirm) -->
+<div id="customModal" class="modal-backdrop hidden">
+ <div class="modal-card">
+  <div class="eyebrow" id="modalEyebrow">Notice</div>
+  <h3 id="modalTitle" style="margin-top:4px;font-size:1.15rem">Message</h3>
+  <p id="modalBody" class="small" style="margin:10px 0 16px"></p>
+  <div id="modalInputWrap" class="hidden" style="margin-bottom:14px">
+   <input type="text" id="modalInput" placeholder="">
+  </div>
+  <div class="actions" style="justify-content:flex-end;margin-top:0">
+   <button id="modalCancel" class="hidden">Cancel</button>
+   <button id="modalConfirm" class="primary">OK</button>
+  </div>
+ </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast hidden"></div>
+
+<main>
+ <!-- ===================================================================== -->
+ <!-- VIEW A: PRESENTER / FACILITATOR & SPECIAL ROLES VIEW (MAIN SCREEN)    -->
+ <!-- ===================================================================== -->
+ <div id="presenterView">
+  <div class="grid">
+   <section class="card span8">
+    <div class="eyebrow">Scenario</div><h2>The Municipal Housing Safety Crisis</h2>
+    <p>A serious fire in an old apartment building triggers public outrage. The government promises a Housing Safety and Renovation Programme. New rules may improve safety — but inspections, certificates and reporting requirements can also create administrative burdens.</p>
+    <div class="notice">Your challenge: improve housing safety without creating an unworkable system or shifting all compliance costs onto tenants, workers and small businesses.</div>
+    <div class="statrow">
+     <div class="stat"><span>Policy effectiveness</span><strong id="eff">50</strong><div class="bar"><i id="effbar" style="width:50%;background:var(--green)"></i></div></div>
+     <div class="stat"><span>Administrative burden</span><strong id="bur">20</strong><div class="bar"><i id="burbar" style="width:20%;background:var(--red)"></i></div></div>
+     <div class="stat"><span>Political support</span><strong id="sup">50</strong><div class="bar"><i id="supbar" style="width:50%;background:var(--accent)"></i></div></div>
+    </div>
+   </section>
+
+   <section class="card span4">
+    <div class="eyebrow">Facilitator timer</div><div class="timer" id="timer">20:00</div>
+    <p class="small">Start when the class is ready. Use the round buttons to move the game forward.</p>
+    <div class="actions"><button class="primary" id="startTimer">Start timer</button><button id="pauseTimer">Pause</button><button id="resetTimer">Reset</button></div>
+    <hr>
+    <div class="eyebrow">Room &amp; Co-Host Access</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0">
+     <span class="pin-box" title="Share this Room Code & Host PIN with your co-host (Special Roles)">Room: <b id="displayRoomCode">----</b> · PIN: <b id="displayHostPin">----</b></span>
+    </div>
+    <div class="actions" style="margin-top:8px">
+     <button class="sm" id="copyCoHostLink">Copy Co-Host Link</button>
+     <button class="sm" id="joinOtherRoomBtn">Join Room</button>
+     <button class="sm" id="resetGame">Reset game</button>
+     <button class="sm" id="export">Download results</button>
+    </div>
+   </section>
+  </div>
+
+  <nav class="tabs" aria-label="Game sections">
+   <button class="active" data-tab="qrLobby">0 · Group QR Codes</button>
+   <button data-tab="round1">1 · Political decision</button>
+   <button data-tab="round2">2 · Implementation</button>
+   <button data-tab="round3">3 · Backlash</button>
+   <button data-tab="special">Special roles</button>
+   <button data-tab="results">Final results</button>
+  </nav>
+
+  <!-- TAB 0: 3 SEPARATE QR CODES FOR THE 3 GROUPS -->
+  <section id="qrLobby" class="tabview">
+   <div class="card">
+    <div class="rolehead">
+     <div>
+      <div class="eyebrow">Live Classroom Setup · Isolated Group Voting</div>
+      <h2>Scan a Group QR Code to Join</h2>
+     </div>
+     <span class="tag">Anti-Influence Mode: Groups cannot see each other's live votes</span>
+    </div>
+    <p class="small">Each of the 3 groups scans their dedicated QR code below on their own phones/laptops. Each group only sees their own mandate and voting ballot—they cannot see what other groups select until you apply the round on the main screen. Share the <b>Co-Host Link</b> (with PIN <b id="pinInline">----</b>) with your friend so both of you can control the Special Roles and Main Screen.</p>
+
+    <div class="qr-grid">
+     <!-- Group 1 QR -->
+     <div class="qr-box">
+      <div>
+       <span class="tag g1">Group 1 · Official Decision-Makers (R1 &amp; R3)</span>
+       <h3 style="margin-top:8px">Politicians</h3>
+       <p class="small">Protect public support and deliver a visible response.</p>
+      </div>
+      <div class="qr-canvas" id="qr-group-1"></div>
+      <div style="width:100%">
+       <div class="small muted" id="g1-voters">Connected devices: 0</div>
+       <div class="actions" style="justify-content:center;margin-top:8px">
+        <button class="sm" onclick="copyGroupUrl(1)">Copy Group 1 Link</button>
+        <button class="sm" onclick="openGroupPreview(1)">Preview</button>
+       </div>
+      </div>
+     </div>
+
+     <!-- Group 2 QR -->
+     <div class="qr-box">
+      <div>
+       <span class="tag g2">Group 2 · Official Decision-Makers (R2)</span>
+       <h3 style="margin-top:8px">Regulatory bureaucracy</h3>
+       <p class="small">Explain what can realistically be implemented.</p>
+      </div>
+      <div class="qr-canvas" id="qr-group-2"></div>
+      <div style="width:100%">
+       <div class="small muted" id="g2-voters">Connected devices: 0</div>
+       <div class="actions" style="justify-content:center;margin-top:8px">
+        <button class="sm" onclick="copyGroupUrl(2)">Copy Group 2 Link</button>
+        <button class="sm" onclick="openGroupPreview(2)">Preview</button>
+       </div>
+      </div>
+     </div>
+
+     <!-- Group 3 QR -->
+     <div class="qr-box">
+      <div>
+       <span class="tag g3">Group 3 · Stakeholder Advisory Vote (All Rounds)</span>
+       <h3 style="margin-top:8px">Organized interests</h3>
+       <p class="small">Business lobby seeks manageable costs; tenants and civil society seek safety and access.</p>
+      </div>
+      <div class="qr-canvas" id="qr-group-3"></div>
+      <div style="width:100%">
+       <div class="small muted" id="g3-voters">Connected devices: 0</div>
+       <div class="actions" style="justify-content:center;margin-top:8px">
+        <button class="sm" onclick="copyGroupUrl(3)">Copy Group 3 Link</button>
+        <button class="sm" onclick="openGroupPreview(3)">Preview</button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- TAB 1: ROUND 1 (PRESENTER VIEW) -->
+  <section id="round1" class="tabview hidden">
+   <div class="grid">
+    <div class="card span8">
+     <div class="rolehead"><div><div class="eyebrow">Round 1 · 4 minutes</div><h2>Political pressure: the public demands action</h2></div><span class="tag">High public salience</span></div>
+     <p>Government must choose an initial policy response. Groups negotiate briefly and submit their votes privately from their QR devices before the politicians' decision is applied.</p>
+
+     <!-- Live Group Vote Status (Hidden from students, visible to Facilitator/Co-host) -->
+     <div class="eyebrow" style="margin-top:14px">Live Group Ballot Status (Private to Main Screen)</div>
+     <div class="status-row">
+      <div class="status-card">
+       <div class="small"><b>Group 1 · Politicians</b> (Deciding Vote)</div>
+       <div id="r1-g1-status" class="status-badge status-wait">Waiting for group vote...</div>
+       <div id="r1-g1-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 2 · Regulatory bureaucracy</b></div>
+       <div id="r1-g2-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r1-g2-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 3 · Organized interests</b></div>
+       <div id="r1-g3-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r1-g3-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+     </div>
+
+     <h3>Politicians: select the policy proposal <span class="small muted">(auto-synced from Group 1 or override here)</span></h3>
+     <label class="choice"><input type="radio" name="r1" value="strict"><div><b>A · Strict inspections for all buildings</b><span>Strong visible response. Broad coverage, high implementation and compliance costs.</span></div></label>
+     <label class="choice"><input type="radio" name="r1" value="risk"><div><b>B · Risk-based inspections</b><span>Prioritise older and higher-risk buildings. Requires technical assessment and reliable data.</span></div></label>
+     <label class="choice"><input type="radio" name="r1" value="voluntary"><div><b>C · Voluntary certification and incentives</b><span>Lower immediate burden, but relies on uptake and may leave unsafe buildings untouched.</span></div></label>
+     <div class="actions"><button class="primary" onclick="submitRound(1)">Submit government decision</button></div>
+     <div id="r1feedback" class="notice hidden"></div>
+    </div>
+    <div class="card span4">
+     <div class="eyebrow">Group mandates</div>
+     <h3>Politicians</h3><p class="small">Protect public support and deliver a visible response.</p>
+     <h3>Regulatory bureaucracy</h3><p class="small">Explain what can realistically be implemented.</p>
+     <h3>Organized interests</h3><p class="small">Business lobby seeks manageable costs; tenants and civil society seek safety and access.</p>
+     <hr><p class="small"><b>Facilitator prompt:</b> Does high public salience make political intervention more likely? Does technical complexity limit it?</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- TAB 2: ROUND 2 (PRESENTER VIEW) -->
+  <section id="round2" class="tabview hidden">
+   <div class="grid">
+    <div class="card span8">
+     <div class="eyebrow">Round 2 · 6 minutes</div><h2>Implementation: rules begin to multiply</h2>
+     <p>The policy now reaches the regulatory agency. The bureaucracy proposes implementation requirements. Select the two procedures the agency wants to introduce.</p>
+
+     <!-- Live Group Vote Status -->
+     <div class="eyebrow" style="margin-top:14px">Live Group Ballot Status (Private to Main Screen)</div>
+     <div class="status-row">
+      <div class="status-card">
+       <div class="small"><b>Group 1 · Politicians</b></div>
+       <div id="r2-g1-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r2-g1-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 2 · Regulatory bureaucracy</b> (Deciding Vote)</div>
+       <div id="r2-g2-status" class="status-badge status-wait">Waiting for group vote...</div>
+       <div id="r2-g2-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 3 · Organized interests</b></div>
+       <div id="r2-g3-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r2-g3-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+     </div>
+
+     <h3 style="margin-top:10px">Regulatory bureaucracy: implementation procedures <span class="small muted">(auto-synced from Group 2 or override here)</span></h3>
+     <label class="choice"><input type="checkbox" name="rules" value="inspection"><div><b>1 · Technical safety inspection certificate</b><span>Documents whether buildings meet safety standards. Has a clear link to the policy goal.</span></div></label>
+     <label class="choice"><input type="checkbox" name="rules" value="duplicate"><div><b>2 · Three separate copies of the same certificate</b><span>Each department requests its own copy. Adds repetition and processing costs.</span></div></label>
+     <label class="choice"><input type="checkbox" name="rules" value="annual"><div><b>3 · Annual compliance report</b><span>Supports monitoring, but requires recurring reporting by building owners.</span></div></label>
+     <label class="choice"><input type="checkbox" name="rules" value="income"><div><b>4 · Additional income documentation for renovation support</b><span>May target subsidies, but can make access harder for vulnerable tenants.</span></div></label>
+     <div class="actions"><button class="primary" onclick="submitRound(2)">Submit implementation rules</button></div>
+     <div id="r2feedback" class="notice hidden"></div>
+    </div>
+    <div class="card span4">
+     <div class="eyebrow">Special intervention</div><h3>Administrative Burden Auditor</h3>
+     <p class="small">The auditor can challenge one proposed procedure and ask who bears its costs and whether it is necessary.</p>
+     <button class="warn" onclick="useAuditor()">Use Burden Alert</button>
+     <div id="auditorStatus" class="notice hidden"></div>
+     <hr><p class="small"><b>Facilitator prompt:</b> Are burdens intentional or unintended? Do they arise from formal procedures or informal organizational practices?</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- TAB 3: ROUND 3 (PRESENTER VIEW) -->
+  <section id="round3" class="tabview hidden">
+   <div class="grid">
+    <div class="card span8">
+     <div class="eyebrow">Round 3 · 5 minutes</div><h2>The backlash: is this still effective regulation?</h2>
+     <p>Small contractors complain about compliance costs. Tenants report that applications are difficult to complete. The media questions whether the programme is working.</p>
+
+     <!-- Live Group Vote Status -->
+     <div class="eyebrow" style="margin-top:14px">Live Group Ballot Status (Private to Main Screen)</div>
+     <div class="status-row">
+      <div class="status-card">
+       <div class="small"><b>Group 1 · Politicians</b> (Deciding Vote)</div>
+       <div id="r3-g1-status" class="status-badge status-wait">Waiting for group vote...</div>
+       <div id="r3-g1-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 2 · Regulatory bureaucracy</b></div>
+       <div id="r3-g2-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r3-g2-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+      <div class="status-card">
+       <div class="small"><b>Group 3 · Organized interests</b></div>
+       <div id="r3-g3-status" class="status-badge status-wait">Waiting for stance...</div>
+       <div id="r3-g3-detail" class="small muted" style="margin-top:5px"></div>
+      </div>
+     </div>
+
+     <h3>Politicians: choose the final response <span class="small muted">(auto-synced from Group 1 or override here)</span></h3>
+     <label class="choice"><input type="radio" name="r3" value="enforce"><div><b>A · Keep all rules and increase enforcement</b><span>Signals resolve and may strengthen compliance, but can intensify burdens.</span></div></label>
+     <label class="choice"><input type="radio" name="r3" value="simplify"><div><b>B · Simplify procedures and remove selected rules</b><span>Reduces burdens, but poorly targeted simplification may weaken oversight.</span></div></label>
+     <label class="choice"><input type="radio" name="r3" value="protect"><div><b>C · Keep safety standards, add exemptions and support</b><span>Preserves core protections while addressing unequal compliance costs.</span></div></label>
+     <div class="actions"><button class="primary" onclick="submitRound(3)">Submit final decision</button></div>
+     <div id="r3feedback" class="notice hidden"></div>
+    </div>
+    <div class="card span4">
+     <div class="eyebrow">Special intervention</div><h3>Media and Political Pressure</h3>
+     <p class="small">The media role may increase public salience once, forcing government to respond to a new development.</p>
+     <button class="warn" onclick="useBreaking()">Play Breaking News</button>
+     <div id="breakingStatus" class="notice hidden"></div>
+     <hr><p class="small"><b>Breaking news:</b> A second building incident has raised public concern. The government must explain whether its response is sufficient.</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- TAB 4: SPECIAL ROLES -->
+  <section id="special" class="tabview hidden">
+   <div class="grid">
+    <div class="card span6">
+     <div class="eyebrow">Presenter role 1</div><h2>Administrative Burden Auditor</h2>
+     <p>Your role connects to Peeters (2020). You do not automatically oppose rules. You test whether organizational procedures create burdens, how they arise, and who carries them.</p>
+     <ul class="small muted"><li>Challenge one procedure.</li><li>Ask whether it is necessary for the policy objective.</li><li>Identify whether the burden is formal or informal, intentional or unintended.</li></ul>
+     <button class="warn" onclick="useAuditor()">Use Burden Alert</button>
+     <div id="auditorStatus2" class="notice hidden"></div>
+    </div>
+    <div class="card span6">
+     <div class="eyebrow">Presenter role 2</div><h2>Media and Political Pressure</h2>
+     <p>This role connects to Ringquist, Worsham &amp; Eisner (2003). You change the salience of the issue and make political intervention more likely.</p>
+     <ul class="small muted"><li>Announce a new media development.</li><li>Raise public pressure on government.</li><li>Ask whether technical complexity makes intervention harder.</li></ul>
+     <button class="warn" onclick="useBreaking()">Play Breaking News</button>
+     <div id="breakingStatus2" class="notice hidden"></div>
+    </div>
+    <div class="card span12">
+     <div class="eyebrow">Presenter debrief prompts</div>
+     <p><b>Peeters:</b> Which actors produced administrative burdens? Were they deliberate or unintended? Which organizational practices reproduced them? Who bore the costs?</p>
+     <p><b>Ringquist et al.:</b> Did public salience change political intervention? Did technical complexity constrain government? Did legislative direction alter the agency's work?</p>
+     <p><b>Course synthesis:</b> How did political choices initiate rules, how did organizations multiply them, and how were the resulting burdens distributed?</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- TAB 5: FINAL RESULTS -->
+  <section id="results" class="tabview hidden">
+   <div class="card">
+    <div class="eyebrow">Debrief · 3 minutes</div><h2>Final policy outcome</h2>
+    <p>The score reflects the simulated consequences of the class's decisions — not empirical measurements or a test of whether one article is correct.</p>
+    <div class="statrow">
+     <div class="stat"><span>Policy effectiveness</span><strong id="feff">50</strong><div class="bar"><i id="feffbar" style="width:50%;background:var(--green)"></i></div></div>
+     <div class="stat"><span>Administrative burden</span><strong id="fbur">20</strong><div class="bar"><i id="fburbar" style="width:20%;background:var(--red)"></i></div></div>
+     <div class="stat"><span>Political support</span><strong id="fsup">50</strong><div class="bar"><i id="fsupbar" style="width:50%;background:var(--accent)"></i></div></div>
+    </div>
+    <div id="interpretation" class="notice success" style="margin-top:18px">Complete the three rounds to generate the class outcome.</div>
+    <h3>Decision record</h3><div id="log" class="small muted">No decisions submitted yet.</div>
+    <div class="actions"><button class="primary" onclick="showResults()">Refresh final result</button><button onclick="window.print()">Print results</button></div>
+   </div>
+  </section>
+ </div>
+
+ <!-- ===================================================================== -->
+ <!-- VIEW B: STUDENT GROUP DEVICE VIEW (ISOLATED BY QR CODE ?group=1/2/3)  -->
+ <!-- ===================================================================== -->
+ <div id="groupView" class="hidden">
+  <div class="grid">
+   <!-- Group Identity & Mandate Card -->
+   <section class="card span8">
+    <div class="rolehead">
+     <div>
+      <div class="eyebrow" id="gvGroupEyebrow">Group Device</div>
+      <h2 id="gvGroupTitle">Group Name</h2>
+     </div>
+     <span class="tag" id="gvGroupBadge">Isolated Ballot</span>
+    </div>
+    <p id="gvGroupMandate" style="color:var(--text)"></p>
+    <div class="notice info small" id="gvIsolationNote">
+     <b>Private Group Session:</b> You can only view and submit your own group's vote. Other groups' live selections remain hidden so they cannot influence your decision.
+    </div>
+
+    <!-- Shared Live Policy Meters (Updated only after rounds officially resolve) -->
+    <div class="statrow">
+     <div class="stat"><span>Policy effectiveness</span><strong id="geff">50</strong><div class="bar"><i id="geffbar" style="width:50%;background:var(--green)"></i></div></div>
+     <div class="stat"><span>Administrative burden</span><strong id="gbur">20</strong><div class="bar"><i id="gburbar" style="width:20%;background:var(--red)"></i></div></div>
+     <div class="stat"><span>Political support</span><strong id="gsup">50</strong><div class="bar"><i id="gsupbar" style="width:50%;background:var(--accent)"></i></div></div>
+    </div>
+   </section>
+
+   <!-- Live Timer & Special Role Alerts Banner for Students -->
+   <section class="card span4">
+    <div class="eyebrow">Classroom Clock</div>
+    <div class="timer" id="gtimer">20:00</div>
+    <p class="small" id="gvActiveRoundHint">Follow the facilitator's instructions on the main screen.</p>
+    <div id="gvSpecialAlerts"></div>
+    <hr>
+    <div class="actions" style="margin-top:8px">
+     <button class="sm" id="unlockHostBtn">Facilitator / Special Roles Login</button>
+    </div>
+   </section>
+
+   <!-- Round Selector for Group Devices (Synced with Presenter or selectable) -->
+   <div class="span12">
+    <nav class="tabs" aria-label="Group rounds">
+     <button class="active" data-gtab="gRound1">Round 1 · Political decision</button>
+     <button data-gtab="gRound2">Round 2 · Implementation</button>
+     <button data-gtab="gRound3">Round 3 · Backlash</button>
+     <button data-gtab="gResults">Final results</button>
+    </nav>
+   </div>
+
+   <!-- Group Round 1 Ballot -->
+   <section id="gRound1" class="card span12 gtabview">
+    <div class="rolehead">
+     <div><div class="eyebrow">Round 1 · 4 minutes</div><h2>Political pressure: the public demands action</h2></div>
+     <span class="tag" id="g1RoleTag">Your Group's Vote</span>
+    </div>
+    <p id="g1PromptText">Government must choose an initial policy response. Discuss within your group and cast your group's vote below.</p>
+    <div id="g1Options">
+     <label class="choice"><input type="radio" name="gr1" value="strict"><div><b>A · Strict inspections for all buildings</b><span>Strong visible response. Broad coverage, high implementation and compliance costs.</span></div></label>
+     <label class="choice"><input type="radio" name="gr1" value="risk"><div><b>B · Risk-based inspections</b><span>Prioritise older and higher-risk buildings. Requires technical assessment and reliable data.</span></div></label>
+     <label class="choice"><input type="radio" name="gr1" value="voluntary"><div><b>C · Voluntary certification and incentives</b><span>Lower immediate burden, but relies on uptake and may leave unsafe buildings untouched.</span></div></label>
+    </div>
+    <div style="margin-top:10px">
+     <label class="small muted" for="gr1Note">Optional brief argument from your group to the class:</label>
+     <input type="text" id="gr1Note" placeholder="e.g., Why your group supports this option..." maxlength="160">
+    </div>
+    <div class="actions">
+     <button class="primary" id="btnSubmitGR1" onclick="submitGroupVote(1)">Submit Group Vote for Round 1</button>
+    </div>
+    <div id="gr1StatusBox" class="notice hidden"></div>
+   </section>
+
+   <!-- Group Round 2 Ballot -->
+   <section id="gRound2" class="card span12 gtabview hidden">
+    <div class="rolehead">
+     <div><div class="eyebrow">Round 2 · 6 minutes</div><h2>Implementation: rules begin to multiply</h2></div>
+     <span class="tag" id="g2RoleTag">Your Group's Vote</span>
+    </div>
+    <p id="g2PromptText">The policy now reaches the regulatory agency. Select the two procedures your group supports introducing.</p>
+    <div id="g2Options">
+     <label class="choice"><input type="checkbox" name="grules" value="inspection"><div><b>1 · Technical safety inspection certificate</b><span>Documents whether buildings meet safety standards. Has a clear link to the policy goal.</span></div></label>
+     <label class="choice"><input type="checkbox" name="grules" value="duplicate"><div><b>2 · Three separate copies of the same certificate</b><span>Each department requests its own copy. Adds repetition and processing costs.</span></div></label>
+     <label class="choice"><input type="checkbox" name="grules" value="annual"><div><b>3 · Annual compliance report</b><span>Supports monitoring, but requires recurring reporting by building owners.</span></div></label>
+     <label class="choice"><input type="checkbox" name="grules" value="income"><div><b>4 · Additional income documentation for renovation support</b><span>May target subsidies, but can make access harder for vulnerable tenants.</span></div></label>
+    </div>
+    <div style="margin-top:10px">
+     <label class="small muted" for="gr2Note">Optional brief argument from your group to the class:</label>
+     <input type="text" id="gr2Note" placeholder="e.g., Practicality or burden concerns..." maxlength="160">
+    </div>
+    <div class="actions">
+     <button class="primary" id="btnSubmitGR2" onclick="submitGroupVote(2)">Submit Group Vote for Round 2</button>
+    </div>
+    <div id="gr2StatusBox" class="notice hidden"></div>
+   </section>
+
+   <!-- Group Round 3 Ballot -->
+   <section id="gRound3" class="card span12 gtabview hidden">
+    <div class="rolehead">
+     <div><div class="eyebrow">Round 3 · 5 minutes</div><h2>The backlash: is this still effective regulation?</h2></div>
+     <span class="tag" id="g3RoleTag">Your Group's Vote</span>
+    </div>
+    <p id="g3PromptText">Small contractors complain about compliance costs. Tenants report that applications are difficult to complete. The media questions whether the programme is working.</p>
+    <div id="g3Options">
+     <label class="choice"><input type="radio" name="gr3" value="enforce"><div><b>A · Keep all rules and increase enforcement</b><span>Signals resolve and may strengthen compliance, but can intensify burdens.</span></div></label>
+     <label class="choice"><input type="radio" name="gr3" value="simplify"><div><b>B · Simplify procedures and remove selected rules</b><span>Reduces burdens, but poorly targeted simplification may weaken oversight.</span></div></label>
+     <label class="choice"><input type="radio" name="gr3" value="protect"><div><b>C · Keep safety standards, add exemptions and support</b><span>Preserves core protections while addressing unequal compliance costs.</span></div></label>
+    </div>
+    <div style="margin-top:10px">
+     <label class="small muted" for="gr3Note">Optional brief argument from your group to the class:</label>
+     <input type="text" id="gr3Note" placeholder="e.g., Who bears the costs of this response?" maxlength="160">
+    </div>
+    <div class="actions">
+     <button class="primary" id="btnSubmitGR3" onclick="submitGroupVote(3)">Submit Group Vote for Round 3</button>
+    </div>
+    <div id="gr3StatusBox" class="notice hidden"></div>
+   </section>
+
+   <!-- Group Final Results -->
+   <section id="gResults" class="card span12 gtabview hidden">
+    <div class="eyebrow">Debrief · 3 minutes</div><h2>Final policy outcome</h2>
+    <p>The score reflects the simulated consequences of the class's decisions — not empirical measurements or a test of whether one article is correct.</p>
+    <div id="gInterpretation" class="notice success" style="margin-top:14px">Complete the three rounds to generate the class outcome.</div>
+    <h3>Decision record</h3>
+    <div id="gLog" class="small muted">No decisions submitted yet.</div>
+   </section>
+  </div>
+ </div>
+
+ <footer>Classroom prototype · Real-time multi-device session · Scores are illustrative game mechanics, not research findings.</footer>
+</main>
+
+<!-- Firebase Realtime Synchronization + Game Logic -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// ============================================================================
+// 1. URL PARAMS, ROOM CODE & ROLE RESOLUTION
+// ============================================================================
+const urlParams = new URLSearchParams(window.location.search);
+let roomCode = (urlParams.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const requestedGroup = urlParams.get('group'); // '1', '2', or '3'
+const requestedPin = urlParams.get('pin') || '';
+
+// Device-unique session identifier so multiple phones in one group can tally or overwrite cleanly
+const deviceId = (() => {
+  try {
+    let id = sessionStorage.getItem('rmg_device_id');
+    if (!id) {
+      id = 'dev_' + Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem('rmg_device_id', id);
+    }
+    return id;
+  } catch (e) {
+    return 'dev_' + Math.random().toString(36).slice(2, 10);
+  }
+})();
+
+let currentRole = requestedGroup && ['1', '2', '3'].includes(requestedGroup) ? 'group' : 'presenter';
+let currentGroupNum = currentRole === 'group' ? Number(requestedGroup) : null;
+let isHostAuthenticated = false;
+
+// Generate random 5-char room code and 4-digit PIN if creating a new session
+function genCode(len = 5) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+function genPin() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+if (!roomCode) {
+  roomCode = genCode(5);
+  const newUrl = new URL(window.location.href);
+  newUrl.searchParams.set('room', roomCode);
+  window.history.replaceState({}, '', newUrl.toString());
+}
+
+// ============================================================================
+// 2. UI HELPERS (CUSTOM MODAL & TOAST — NO alert() OR confirm())
+// ============================================================================
+const $ = id => document.getElementById(id);
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.add('hidden'), 3200);
+}
+
+function showModal({ eyebrow = 'Notice', title, body, showCancel = false, inputPlaceholder = '', confirmText = 'OK' }) {
+  return new Promise(resolve => {
+    $('modalEyebrow').textContent = eyebrow;
+    $('modalTitle').textContent = title;
+    $('modalBody').textContent = body;
+    $('modalConfirm').textContent = confirmText;
+
+    const cancelBtn = $('modalCancel');
+    cancelBtn.classList.toggle('hidden', !showCancel);
+
+    const inputWrap = $('modalInputWrap');
+    const inputEl = $('modalInput');
+    if (inputPlaceholder) {
+      inputWrap.classList.remove('hidden');
+      inputEl.value = '';
+      inputEl.placeholder = inputPlaceholder;
+      setTimeout(() => inputEl.focus(), 50);
+    } else {
+      inputWrap.classList.add('hidden');
+    }
+
+    $('customModal').classList.remove('hidden');
+
+    const cleanup = (val) => {
+      $('customModal').classList.add('hidden');
+      $('modalConfirm').onclick = null;
+      cancelBtn.onclick = null;
+      resolve(val);
+    };
+
+    $('modalConfirm').onclick = () => cleanup(inputPlaceholder ? inputEl.value.trim() : true);
+    cancelBtn.onclick = () => cleanup(false);
+  });
+}
+
+function copyTextFallback(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('Link copied to clipboard!');
+  } catch (e) {
+    showToast('Copy failed — please copy URL manually.');
+  }
+  document.body.removeChild(ta);
+}
+
+// ============================================================================
+// 3. GAME STATE & EXACT ORIGINAL SCORING LOGIC
+// ============================================================================
+const DEFAULT_GAME_STATE = {
+  eff: 50,
+  bur: 20,
+  sup: 50,
+  done: { 1: false, 2: false, 3: false },
+  auditor: false,
+  breaking: false,
+  log: [],
+  activeTab: 'qrLobby',
+  timerSeconds: 1200,
+  timerRunning: false,
+  timerUpdatedAt: Date.now()
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULT_GAME_STATE));
+let roomMeta = { hostPin: genPin() };
+let groupVotes = { 1: {}, 2: {}, 3: {} }; // Latest votes per group & round: groupVotes[groupNum][roundNum]
+let presenceCounts = { 1: 0, 2: 0, 3: 0 };
+let localTimerInterval = null;
+
+function clamp(n) {
+  return Math.max(0, Math.min(100, n));
+}
+
+const OPTION_LABELS = {
+  r1: {
+    strict: 'A · Strict inspections for all buildings',
+    risk: 'B · Risk-based inspections',
+    voluntary: 'C · Voluntary certification and incentives'
+  },
+  rules: {
+    inspection: '1 · Technical safety inspection certificate',
+    duplicate: '2 · Three separate copies of the same certificate',
+    annual: '3 · Annual compliance report',
+    income: '4 · Additional income documentation for renovation support'
+  },
+  r3: {
+    enforce: 'A · Keep all rules and increase enforcement',
+    simplify: 'B · Simplify procedures and remove selected rules',
+    protect: 'C · Keep safety standards, add exemptions and support'
+  }
+};
+
+// ============================================================================
+// 4. FIREBASE INITIALIZATION (STRICT MANDATORY PATHS & AUTH FIRST)
+// ============================================================================
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+let db = null;
+let auth = null;
+let currentUser = null;
+let roomRef = null;
+
+async function initFirebase() {
+  try {
+    if (typeof __firebase_config === 'undefined') {
+      $('connPill').textContent = 'Local Offline Mode';
+      $('connPill').classList.remove('live');
+      renderQRCodes();
+      updateUI();
+      return;
+    }
+
+    const firebaseConfig = JSON.parse(__firebase_config);
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    // RULE 3: Authenticate FIRST and await before any Firestore queries
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+      await signInWithCustomToken(auth, __initial_auth_token);
+    } else {
+      await signInAnonymously(auth);
+    }
+    currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    // RULE 1: Strict public artifact path for shared classroom session
+    roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rmg_rooms', roomCode);
+
+    const snap = await getDoc(roomRef);
+    if (!snap.exists()) {
+      const initialPin = requestedPin || genPin();
+      roomMeta.hostPin = initialPin;
+      await setDoc(roomRef, {
+        ...DEFAULT_GAME_STATE,
+        hostPin: initialPin,
+        createdAt: Date.now()
+      });
+    } else {
+      const data = snap.data();
+      roomMeta.hostPin = data.hostPin || genPin();
+    }
+
+    // Check Host / Co-Host PIN authorization if opening Presenter View
+    await verifyRoleAccess();
+
+    // Listen to room state in real time
+    onSnapshot(roomRef, (docSnap) => {
+      if (!docSnap.exists()) return;
+      const d = docSnap.data();
+      state.eff = d.eff ?? 50;
+      state.bur = d.bur ?? 20;
+      state.sup = d.sup ?? 50;
+      state.done = d.done || { 1: false, 2: false, 3: false };
+      state.auditor = Boolean(d.auditor);
+      state.breaking = Boolean(d.breaking);
+      state.log = Array.isArray(d.log) ? d.log : [];
+      state.activeTab = d.activeTab || 'qrLobby';
+      state.timerSeconds = d.timerSeconds ?? 1200;
+      state.timerRunning = Boolean(d.timerRunning);
+      state.timerUpdatedAt = d.timerUpdatedAt || Date.now();
+      roomMeta.hostPin = d.hostPin || roomMeta.hostPin;
+
+      syncTimerFromState();
+      updateUI();
+    }, (err) => {
+      console.error('Room listener error:', err);
+      $('connPill').textContent = 'Sync interrupted';
+    });
+
+    // Listen to group votes sub-collection (simple collection query - RULE 2)
+    const votesCol = collection(db, 'artifacts', appId, 'public', 'data', 'rmg_votes_' + roomCode);
+    onSnapshot(votesCol, (querySnap) => {
+      const latest = { 1: {}, 2: {}, 3: {} };
+      const counts = { 1: {}, 2: {}, 3: {} };
+      const devicesByGroup = { 1: new Set(), 2: new Set(), 3: new Set() };
+
+      querySnap.forEach(docItem => {
+        const v = docItem.data();
+        const g = Number(v.group);
+        const r = Number(v.round);
+        if (![1, 2, 3].includes(g)) return;
+        if (v.deviceId) devicesByGroup[g].add(v.deviceId);
+        if ([1, 2, 3].includes(r) && v.submitted) {
+          // Track latest group submission per round
+          if (!latest[g][r] || (v.updatedAt || 0) >= (latest[g][r].updatedAt || 0)) {
+            latest[g][r] = v;
+          }
+          counts[g][r] = (counts[g][r] || 0) + 1;
+        }
+      });
+
+      groupVotes = latest;
+      presenceCounts = {
+        1: devicesByGroup[1].size,
+        2: devicesByGroup[2].size,
+        3: devicesByGroup[3].size
+      };
+      updateUI();
+    }, (err) => {
+      console.error('Votes listener error:', err);
+    });
+
+    // Register presence ping for group devices
+    if (currentRole === 'group' && currentGroupNum) {
+      const presDoc = doc(db, 'artifacts', appId, 'public', 'data', 'rmg_votes_' + roomCode, `presence_g${currentGroupNum}_${deviceId}`);
+      await setDoc(presDoc, {
+        group: currentGroupNum,
+        round: 0,
+        submitted: false,
+        deviceId,
+        updatedAt: Date.now()
+      });
+    }
+
+    $('connPill').textContent = `Live Room · ${roomCode}`;
+    $('connPill').classList.add('live');
+    renderQRCodes();
+    updateUI();
+  } catch (err) {
+    console.error('Firebase init error:', err);
+    $('connPill').textContent = 'Offline Mode';
+    renderQRCodes();
+    updateUI();
+  }
+}
+
+async function verifyRoleAccess() {
+  if (currentRole === 'group') {
+    isHostAuthenticated = false;
+    setupGroupView();
+    return;
+  }
+
+  // Presenter / Special Roles view:
+  // If user created the room or arrived with the exact ?pin=XXXX link (e.g. your friend via Co-Host link), grant immediate access!
+  const storedPin = (() => {
+    try { return sessionStorage.getItem('rmg_pin_' + roomCode); } catch (e) { return ''; }
+  })();
+
+  if (requestedPin === roomMeta.hostPin || storedPin === roomMeta.hostPin || !urlParams.get('room')) {
+    isHostAuthenticated = true;
+    try { sessionStorage.setItem('rmg_pin_' + roomCode, roomMeta.hostPin); } catch (e) {}
+    setupPresenterView();
+    return;
+  }
+
+  // Otherwise, if someone manually opens Presenter URL without PIN, require Host PIN so students cannot sneak in
+  const entered = await showModal({
+    eyebrow: 'Facilitator & Special Roles Access',
+    title: 'Enter Host PIN',
+    body: `Enter the 4-digit Host PIN for room ${roomCode} to access the Main Screen and Special Roles, or cancel to join as Group 1.`,
+    showCancel: true,
+    inputPlaceholder: '4-digit PIN (e.g. 1234)',
+    confirmText: 'Unlock Main Screen'
+  });
+
+  if (entered === roomMeta.hostPin) {
+    isHostAuthenticated = true;
+    try { sessionStorage.setItem('rmg_pin_' + roomCode, roomMeta.hostPin); } catch (e) {}
+    setupPresenterView();
+  } else {
+    // Fallback to Group 1 isolated view if PIN is wrong/cancelled
+    currentRole = 'group';
+    currentGroupNum = 1;
+    setupGroupView();
+  }
+}
+
+async function persistRoomPatch(patch) {
+  if (!db || !currentUser || !roomRef) return;
+  try {
+    await updateDoc(roomRef, patch);
+  } catch (err) {
+    console.error('Failed to sync room state:', err);
+  }
+}
+
+// ============================================================================
+// 5. QR CODE GENERATION (3 DISTINCT GROUP QR CODES)
+// ============================================================================
+function getBaseUrl() {
+  const u = new URL(window.location.href);
+  u.search = '';
+  return u.toString();
+}
+
+function getGroupJoinUrl(groupNum) {
+  const u = new URL(getBaseUrl());
+  u.searchParams.set('room', roomCode);
+  u.searchParams.set('group', String(groupNum));
+  return u.toString();
+}
+
+function getCoHostUrl() {
+  const u = new URL(getBaseUrl());
+  u.searchParams.set('room', roomCode);
+  u.searchParams.set('pin', roomMeta.hostPin);
+  return u.toString();
+}
+
+function renderQRCodes() {
+  if (currentRole !== 'presenter') return;
+  [1, 2, 3].forEach(g => {
+    const container = $('qr-group-' + g);
+    if (!container) return;
+    container.innerHTML = '';
+    const joinUrl = getGroupJoinUrl(g);
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(container, {
+        text: joinUrl,
+        width: 140,
+        height: 140,
+        colorDark: '#101722',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      container.innerHTML = `<div class="small" style="color:#101722;padding:8px">Room <b>${roomCode}</b><br>Group ${g}</div>`;
+    }
+  });
+}
+
+window.copyGroupUrl = function(g) {
+  copyTextFallback(getGroupJoinUrl(g));
+};
+
+window.openGroupPreview = function(g) {
+  window.open(getGroupJoinUrl(g), '_blank');
+};
+
+// ============================================================================
+// 6. VIEW SETUP: PRESENTER VS ISOLATED GROUP VIEW
+// ============================================================================
+function setupPresenterView() {
+  $('presenterView').classList.remove('hidden');
+  $('groupView').classList.add('hidden');
+  $('rolePill').textContent = 'Role: Presenter & Special Roles';
+  $('displayRoomCode').textContent = roomCode;
+  $('displayHostPin').textContent = roomMeta.hostPin;
+  $('pinInline').textContent = roomMeta.hostPin;
+  renderQRCodes();
+}
+
+function setupGroupView() {
+  $('presenterView').classList.add('hidden');
+  $('groupView').classList.remove('hidden');
+
+  const meta = {
+    1: {
+      name: 'Group 1 · Politicians',
+      badge: 'Official Decision-Makers (Rounds 1 & 3)',
+      mandate: 'Your mandate: Protect public support and deliver a visible response. In Rounds 1 and 3, your group submits the official government policy choice.',
+      r1: 'Politicians: select the initial policy proposal for the government.',
+      r2: 'Advisory stance: indicate which two implementation rules your political leadership prefers.',
+      r3: 'Politicians: select the government\'s final response to the backlash.'
+    },
+    2: {
+      name: 'Group 2 · Regulatory bureaucracy',
+      badge: 'Official Decision-Makers (Round 2)',
+      mandate: 'Your mandate: Explain what can realistically be implemented. In Round 2, your agency selects the two implementation procedures.',
+      r1: 'Advisory stance: indicate which policy proposal is most realistic for your agency to implement.',
+      r2: 'Regulatory bureaucracy: select the two implementation procedures the agency proposes.',
+      r3: 'Advisory stance: indicate how your agency recommends responding to implementation complaints.'
+    },
+    3: {
+      name: 'Group 3 · Organized interests',
+      badge: 'Stakeholder Vote (Business, Tenants & Civil Society)',
+      mandate: 'Your mandate: Business lobby seeks manageable costs; tenants and civil society seek safety and access. Cast your group\'s independent vote in every round.',
+      r1: 'Stakeholder ballot: vote on the policy proposal your coalition demands in Round 1.',
+      r2: 'Stakeholder ballot: vote on which two implementation rules your coalition supports or opposes.',
+      r3: 'Stakeholder ballot: vote on the final response your coalition demands in Round 3.'
+    }
+  }[currentGroupNum];
+
+  $('rolePill').textContent = meta.name;
+  $('gvGroupEyebrow').textContent = `Room ${roomCode} · Isolated Group Device`;
+  $('gvGroupTitle').textContent = meta.name;
+  $('gvGroupBadge').textContent = meta.badge;
+  $('gvGroupMandate').textContent = meta.mandate;
+  $('g1PromptText').textContent = meta.r1;
+  $('g2PromptText').textContent = meta.r2;
+  $('g3PromptText').textContent = meta.r3;
+}
+
+// ============================================================================
+// 7. STUDENT GROUP VOTING (ISOLATED PER GROUP — CANNOT SEE OTHER GROUPS)
+// ============================================================================
+window.submitGroupVote = async function(roundNum) {
+  if (state.done[roundNum]) {
+    await showModal({ title: 'Round Closed', body: `Round ${roundNum} has already been finalized on the main screen.` });
+    return;
+  }
+
+  let payload = null;
+
+  if (roundNum === 1) {
+    const selected = document.querySelector('input[name="gr1"]:checked');
+    if (!selected) {
+      await showModal({ title: 'Select an Option', body: 'Please choose Option A, B, or C before submitting your group vote.' });
+      return;
+    }
+    payload = {
+      choice: selected.value,
+      note: ($('gr1Note').value || '').trim()
+    };
+  } else if (roundNum === 2) {
+    const checked = [...document.querySelectorAll('input[name="grules"]:checked')].map(el => el.value);
+    if (!checked.length) {
+      await showModal({ title: 'Select Procedures', body: 'Please select up to two implementation procedures before submitting.' });
+      return;
+    }
+    if (checked.length > 2) {
+      await showModal({ title: 'Maximum 2 Procedures', body: 'The regulatory agency proposes two procedures. Please select 2 rules.' });
+      return;
+    }
+    payload = {
+      choices: checked,
+      note: ($('gr2Note').value || '').trim()
+    };
+  } else if (roundNum === 3) {
+    const selected = document.querySelector('input[name="gr3"]:checked');
+    if (!selected) {
+      await showModal({ title: 'Select an Option', body: 'Please choose Option A, B, or C before submitting your group vote.' });
+      return;
+    }
+    payload = {
+      choice: selected.value,
+      note: ($('gr3Note').value || '').trim()
+    };
+  }
+
+  // Save vote strictly for THIS group & round
+  const voteRecord = {
+    group: currentGroupNum,
+    round: roundNum,
+    submitted: true,
+    payload,
+    deviceId,
+    updatedAt: Date.now()
+  };
+
+  groupVotes[currentGroupNum][roundNum] = voteRecord;
+
+  if (db && currentUser) {
+    try {
+      // One canonical group ballot document per group & round so group devices share their group's official submission
+      const voteDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rmg_votes_' + roomCode, `g${currentGroupNum}_r${roundNum}`);
+      await setDoc(voteDocRef, voteRecord);
+    } catch (err) {
+      console.error('Error submitting group vote:', err);
+    }
+  }
+
+  showToast(`Group ${currentGroupNum} vote submitted for Round ${roundNum}!`);
+  updateUI();
+};
+
+// ============================================================================
+// 8. PRESENTER GAME ACTIONS (EXACT ORIGINAL SCORING & TEXT)
+// ============================================================================
+function change(e, b, s, why) {
+  state.eff = clamp(state.eff + e);
+  state.bur = clamp(state.bur + b);
+  state.sup = clamp(state.sup + s);
+  state.log.push(why);
+}
+
+function feedback(id, msg, kind = '') {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('hidden', 'success', 'danger', 'info');
+  if (kind) el.classList.add(kind);
+}
+
+window.submitRound = async function(n) {
+  if (state.done[n]) {
+    await showModal({ title: 'Already Submitted', body: 'This round has already been submitted.' });
+    return;
+  }
+
+  if (n === 1) {
+    const v = document.querySelector('input[name="r1"]:checked');
+    if (!v) {
+      await showModal({ title: 'Choose Policy', body: 'Choose a policy first (or wait for Group 1 to submit).' });
+      return;
+    }
+    const m = {
+      strict: [15, 12, 5, 'Round 1: universal strict inspections'],
+      risk: [12, 4, 8, 'Round 1: risk-based inspections'],
+      voluntary: [4, 1, 2, 'Round 1: voluntary certification and incentives']
+    }[v.value];
+    change(...m);
+    feedback('r1feedback', 'Decision recorded. The policy is now sent to the regulatory agency.', 'success');
+  }
+
+  if (n === 2) {
+    const vs = [...document.querySelectorAll('input[name="rules"]:checked')].map(x => x.value);
+    if (!vs.length) {
+      await showModal({ title: 'Select Rules', body: 'Select at least one implementation rule (or wait for Group 2 to submit).' });
+      return;
+    }
+    let e = 0, b = 0, s = 0, labels = [];
+    vs.forEach(v => {
+      const d = {
+        inspection: [8, 5, 0, 'Safety inspection certificate'],
+        duplicate: [0, 15, -4, 'Three copies of the same certificate'],
+        annual: [3, 7, -1, 'Annual compliance report'],
+        income: [1, 9, -5, 'Additional income documentation']
+      }[v];
+      e += d[0];
+      b += d[1];
+      s += d[2];
+      labels.push(d[3]);
+    });
+    if (vs.length > 2) {
+      b += 5;
+      labels.push('Capacity strain from multiple procedures');
+    }
+    change(e, b, s, 'Round 2: ' + labels.join('; '));
+    feedback('r2feedback', 'Implementation rules recorded. Notice how procedures accumulate and create different kinds of burdens.', 'success');
+  }
+
+  if (n === 3) {
+    const v = document.querySelector('input[name="r3"]:checked');
+    if (!v) {
+      await showModal({ title: 'Choose Response', body: 'Choose a final response (or wait for Group 1 to submit).' });
+      return;
+    }
+    const m = {
+      enforce: [8, 12, -8, 'Round 3: keep all rules and increase enforcement'],
+      simplify: [-4, -13, 3, 'Round 3: simplify procedures'],
+      protect: [7, -6, 9, 'Round 3: retain standards and support vulnerable groups']
+    }[v.value];
+    change(...m);
+    feedback('r3feedback', 'Final decision recorded. Review the outcome and discuss who benefited and who carried the costs.', 'success');
+  }
+
+  state.done[n] = true;
+  updateUI();
+  await persistRoomPatch({
+    eff: state.eff,
+    bur: state.bur,
+    sup: state.sup,
+    done: state.done,
+    log: state.log
+  });
+};
+
+window.useAuditor = async function() {
+  if (state.auditor) {
+    feedback('auditorStatus', 'Burden Alert has already been used.');
+    feedback('auditorStatus2', 'Burden Alert has already been used.');
+    return;
+  }
+  state.auditor = true;
+  // Exact original math: burden -5, political support +2
+  state.bur = clamp(state.bur - 5);
+  state.sup = clamp(state.sup + 2);
+  state.log.push('Auditor intervention: one procedure was challenged; burden reduced by 5 after review.');
+
+  const msg = 'BURDEN ALERT: The bureaucracy must justify the necessity of its procedures and identify who bears their costs. Burden score −5.';
+  feedback('auditorStatus', msg, 'success');
+  feedback('auditorStatus2', msg, 'success');
+  updateUI();
+
+  await persistRoomPatch({
+    bur: state.bur,
+    sup: state.sup,
+    auditor: true,
+    log: state.log
+  });
+};
+
+window.useBreaking = async function() {
+  if (state.breaking) {
+    feedback('breakingStatus', 'Breaking News has already been played.');
+    feedback('breakingStatus2', 'Breaking News has already been played.');
+    return;
+  }
+  state.breaking = true;
+  // Exact original math: political support -8
+  state.sup = clamp(state.sup - 8);
+  state.log.push('Breaking News: public salience increased and political pressure intensified.');
+
+  const msg = 'BREAKING NEWS: A second building incident has raised public concern. Government must publicly justify its response. Political support −8.';
+  feedback('breakingStatus', msg, 'danger');
+  feedback('breakingStatus2', msg, 'danger');
+  updateUI();
+
+  await persistRoomPatch({
+    sup: state.sup,
+    breaking: true,
+    log: state.log
+  });
+};
+
+function getInterpretationText() {
+  if (state.bur >= 65) {
+    return 'The policy may improve safety, but high administrative burden threatens access and implementation. Ask whether procedures are still necessary or have become red tape.';
+  } else if (state.eff < 50) {
+    return 'The policy has not sufficiently addressed the safety problem. Simplification or low burdens alone do not guarantee effective regulation.';
+  } else if (state.eff >= 65 && state.bur <= 45) {
+    return 'The class achieved a relatively balanced outcome: meaningful safety gains with contained administrative burdens. Ask what made this possible.';
+  } else {
+    return 'The outcome involves trade-offs: policy effectiveness, administrative burden and political support do not move together. Ask which groups gained and which paid the costs.';
+  }
+}
+
+// ============================================================================
+// 9. UI SYNCHRONIZATION & RENDERING
+// ============================================================================
+function updateUI() {
+  // Update meters on both Presenter and Group views
+  ['eff', 'bur', 'sup'].forEach(k => {
+    if ($(k)) $(k).textContent = state[k];
+    if ($(k + 'bar')) $(k + 'bar').style.width = state[k] + '%';
+    if ($('f' + k)) $('f' + k).textContent = state[k];
+    if ($('f' + k + 'bar')) $('f' + k + 'bar').style.width = state[k] + '%';
+    if ($('g' + k)) $('g' + k).textContent = state[k];
+    if ($('g' + k + 'bar')) $('g' + k + 'bar').style.width = state[k] + '%';
+  });
+
+  const completedCount = Object.values(state.done).filter(Boolean).length;
+  $('roundPill').textContent = completedCount === 3
+    ? 'Game complete'
+    : `Rounds completed · ${completedCount}/3`;
+
+  const logHtml = state.log.length
+    ? state.log.map(x => `<p>• ${escapeHtml(x)}</p>`).join('')
+    : 'No decisions submitted yet.';
+  if ($('log')) $('log').innerHTML = logHtml;
+  if ($('gLog')) $('gLog').innerHTML = logHtml;
+
+  const interp = getInterpretationText();
+  if ($('interpretation')) $('interpretation').textContent = interp;
+  if ($('gInterpretation')) $('gInterpretation').textContent = interp;
+
+  // Presenter-only live ballot monitors & auto-selection of deciding group's vote
+  if (currentRole === 'presenter') {
+    [1, 2, 3].forEach(g => {
+      if ($('g' + g + '-voters')) {
+        $('g' + g + '-voters').textContent = `Connected devices: ${presenceCounts[g] || 0}`;
+      }
+    });
+
+    renderPresenterRoundMonitor(1);
+    renderPresenterRoundMonitor(2);
+    renderPresenterRoundMonitor(3);
+
+    if (state.auditor) {
+      const msg = 'BURDEN ALERT: The bureaucracy must justify the necessity of its procedures and identify who bears their costs. Burden score −5.';
+      feedback('auditorStatus', msg, 'success');
+      feedback('auditorStatus2', msg, 'success');
+    }
+    if (state.breaking) {
+      const msg = 'BREAKING NEWS: A second building incident has raised public concern. Government must publicly justify its response. Political support −8.';
+      feedback('breakingStatus', msg, 'danger');
+      feedback('breakingStatus2', msg, 'danger');
+    }
+  }
+
+  // Student Group View: strictly isolated to currentGroupNum
+  if (currentRole === 'group' && currentGroupNum) {
+    renderGroupIsolatedStatus(1);
+    renderGroupIsolatedStatus(2);
+    renderGroupIsolatedStatus(3);
+
+    // Show Special Role alerts to students once triggered by host/co-host
+    const alerts = [];
+    if (state.auditor) {
+      alerts.push(`<div class="notice success small" style="margin:8px 0"><b>BURDEN ALERT (Auditor):</b> Procedures challenged for necessity and cost distribution. Burden −5.</div>`);
+    }
+    if (state.breaking) {
+      alerts.push(`<div class="notice danger small" style="margin:8px 0"><b>BREAKING NEWS (Media):</b> A second building incident has raised public concern! Political support −8.</div>`);
+    }
+    $('gvSpecialAlerts').innerHTML = alerts.join('');
+
+    // Auto-follow facilitator's active round tab on student phones
+    const mapTab = { round1: 'gRound1', round2: 'gRound2', round3: 'gRound3', results: 'gResults' };
+    if (mapTab[state.activeTab]) {
+      switchGroupTab(mapTab[state.activeTab]);
+    }
+  }
+}
+
+function renderPresenterRoundMonitor(roundNum) {
+  [1, 2, 3].forEach(g => {
+    const statusEl = $(`r${roundNum}-g${g}-status`);
+    const detailEl = $(`r${roundNum}-g${g}-detail`);
+    if (!statusEl || !detailEl) return;
+
+    const vote = groupVotes[g]?.[roundNum];
+    if (vote && vote.submitted && vote.payload) {
+      statusEl.textContent = 'Vote Submitted';
+      statusEl.className = 'status-badge status-ready';
+
+      let summary = '';
+      if (roundNum === 1) summary = OPTION_LABELS.r1[vote.payload.choice] || vote.payload.choice;
+      if (roundNum === 2) summary = (vote.payload.choices || []).map(c => OPTION_LABELS.rules[c] || c).join(' + ');
+      if (roundNum === 3) summary = OPTION_LABELS.r3[vote.payload.choice] || vote.payload.choice;
+
+      detailEl.innerHTML = `<b>${escapeHtml(summary)}</b>${vote.payload.note ? `<br><i>"${escapeHtml(vote.payload.note)}"</i>` : ''}`;
+
+      // Auto-sync deciding group's vote into main screen inputs if round is not yet finalized
+      if (!state.done[roundNum]) {
+        if (roundNum === 1 && g === 1 && vote.payload.choice) {
+          const radio = document.querySelector(`input[name="r1"][value="${vote.payload.choice}"]`);
+          if (radio) radio.checked = true;
+        }
+        if (roundNum === 2 && g === 2 && Array.isArray(vote.payload.choices)) {
+          document.querySelectorAll('input[name="rules"]').forEach(cb => {
+            cb.checked = vote.payload.choices.includes(cb.value);
+          });
+        }
+        if (roundNum === 3 && g === 1 && vote.payload.choice) {
+          const radio = document.querySelector(`input[name="r3"][value="${vote.payload.choice}"]`);
+          if (radio) radio.checked = true;
+        }
+      }
+    } else {
+      statusEl.textContent = 'Deliberating...';
+      statusEl.className = 'status-badge status-wait';
+      detailEl.textContent = '';
+    }
+  });
+}
+
+function renderGroupIsolatedStatus(roundNum) {
+  const box = $(`gr${roundNum}StatusBox`);
+  const btn = $(`btnSubmitGR${roundNum}`);
+  if (!box || !btn) return;
+
+  const myVote = groupVotes[currentGroupNum]?.[roundNum];
+  const isRoundClosed = Boolean(state.done[roundNum]);
+
+  if (isRoundClosed) {
+    btn.disabled = true;
+    box.classList.remove('hidden', 'danger', 'info');
+    box.classList.add('success');
+    box.textContent = `Round ${roundNum} is complete. Check the main screen or Results tab for the outcome.`;
+  } else if (myVote && myVote.submitted) {
+    btn.disabled = false;
+    btn.textContent = `Update Group ${currentGroupNum} Vote`;
+    box.classList.remove('hidden', 'danger');
+    box.classList.add('success');
+    box.textContent = `Your group's vote has been privately recorded for the facilitator. Other groups cannot see your choice.`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = `Submit Group Vote for Round ${roundNum}`;
+    box.classList.add('hidden');
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ============================================================================
+// 10. TABS & SHARED TIMER SYNCHRONIZATION
+// ============================================================================
+function switchPresenterTab(tabId) {
+  document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x.dataset.tab === tabId));
+  document.querySelectorAll('.tabview').forEach(x => x.classList.add('hidden'));
+  if ($(tabId)) $(tabId).classList.remove('hidden');
+  if (tabId === 'qrLobby') renderQRCodes();
+}
+
+function switchGroupTab(gtabId) {
+  document.querySelectorAll('[data-gtab]').forEach(x => x.classList.toggle('active', x.dataset.gtab === gtabId));
+  document.querySelectorAll('.gtabview').forEach(x => x.classList.add('hidden'));
+  if ($(gtabId)) $(gtabId).classList.remove('hidden');
+}
+
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
+  const tabId = b.dataset.tab;
+  switchPresenterTab(tabId);
+  state.activeTab = tabId;
+  persistRoomPatch({ activeTab: tabId });
+}));
+
+document.querySelectorAll('[data-gtab]').forEach(b => b.addEventListener('click', () => {
+  switchGroupTab(b.dataset.gtab);
+}));
+
+function getEffectiveSeconds() {
+  if (!state.timerRunning) return state.timerSeconds;
+  const elapsed = Math.floor((Date.now() - state.timerUpdatedAt) / 1000);
+  return Math.max(0, state.timerSeconds - elapsed);
+}
+
+function renderTimer() {
+  const secs = getEffectiveSeconds();
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  const formatted = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  if ($('timer')) $('timer').textContent = formatted;
+  if ($('gtimer')) $('gtimer').textContent = formatted;
+}
+
+function syncTimerFromState() {
+  clearInterval(localTimerInterval);
+  renderTimer();
+  if (state.timerRunning) {
+    localTimerInterval = setInterval(() => {
+      renderTimer();
+      if (getEffectiveSeconds() <= 0) {
+        clearInterval(localTimerInterval);
+        localTimerInterval = null;
+        if (currentRole === 'presenter') {
+          state.timerRunning = false;
+          state.timerSeconds = 0;
+          persistRoomPatch({ timerRunning: false, timerSeconds: 0 });
+          showModal({ title: 'Time Up', body: '20 minutes are up. Move to the debrief.' });
+        }
+      }
+    }, 500);
+  }
+}
+
+$('startTimer').onclick = () => {
+  if (state.timerRunning) return;
+  const current = getEffectiveSeconds();
+  state.timerSeconds = current > 0 ? current : 1200;
+  state.timerRunning = true;
+  state.timerUpdatedAt = Date.now();
+  syncTimerFromState();
+  persistRoomPatch({
+    timerSeconds: state.timerSeconds,
+    timerRunning: true,
+    timerUpdatedAt: state.timerUpdatedAt
+  });
+};
+
+$('pauseTimer').onclick = () => {
+  if (!state.timerRunning) return;
+  const rem = getEffectiveSeconds();
+  state.timerSeconds = rem;
+  state.timerRunning = false;
+  state.timerUpdatedAt = Date.now();
+  syncTimerFromState();
+  persistRoomPatch({
+    timerSeconds: rem,
+    timerRunning: false,
+    timerUpdatedAt: state.timerUpdatedAt
+  });
+};
+
+$('resetTimer').onclick = () => {
+  state.timerSeconds = 1200;
+  state.timerRunning = false;
+  state.timerUpdatedAt = Date.now();
+  syncTimerFromState();
+  persistRoomPatch({
+    timerSeconds: 1200,
+    timerRunning: false,
+    timerUpdatedAt: state.timerUpdatedAt
+  });
+};
+
+// ============================================================================
+// 11. HOST CONTROLS: CO-HOST LINK, JOIN ROOM, RESET GAME, EXPORT
+// ============================================================================
+$('copyCoHostLink').onclick = () => {
+  copyTextFallback(getCoHostUrl());
+};
+
+$('joinOtherRoomBtn').onclick = async () => {
+  const code = await showModal({
+    eyebrow: 'Switch Session',
+    title: 'Join Another Room',
+    body: 'Enter the 5-character Room Code displayed on the host screen:',
+    showCancel: true,
+    inputPlaceholder: 'e.g. AB12C',
+    confirmText: 'Join Room'
+  });
+  if (code) {
+    const clean = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (clean) {
+      const u = new URL(getBaseUrl());
+      u.searchParams.set('room', clean);
+      window.location.href = u.toString();
+    }
+  }
+};
+
+$('unlockHostBtn').onclick = async () => {
+  const pin = await showModal({
+    eyebrow: 'Special Roles & Presenter Access',
+    title: 'Unlock Main Screen',
+    body: `Enter the 4-digit Host PIN for room ${roomCode}:`,
+    showCancel: true,
+    inputPlaceholder: '4-digit PIN',
+    confirmText: 'Unlock'
+  });
+  if (pin === roomMeta.hostPin) {
+    const u = new URL(getBaseUrl());
+    u.searchParams.set('room', roomCode);
+    u.searchParams.set('pin', pin);
+    window.location.href = u.toString();
+  } else if (pin !== false) {
+    showToast('Incorrect Host PIN.');
+  }
+};
+
+$('resetGame').onclick = async () => {
+  const confirmed = await showModal({
+    eyebrow: 'Reset Simulation',
+    title: 'Reset all decisions and scores?',
+    body: 'This will reset Policy Effectiveness (50), Administrative Burden (20), Political Support (50), and clear all round decisions and group votes for this room.',
+    showCancel: true,
+    confirmText: 'Reset Game'
+  });
+  if (!confirmed) return;
+
+  state.eff = 50;
+  state.bur = 20;
+  state.sup = 50;
+  state.done = { 1: false, 2: false, 3: false };
+  state.auditor = false;
+  state.breaking = false;
+  state.log = [];
+
+  document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(x => x.checked = false);
+  ['r1feedback', 'r2feedback', 'r3feedback', 'auditorStatus', 'auditorStatus2', 'breakingStatus', 'breakingStatus2'].forEach(id => {
+    if ($(id)) $(id).classList.add('hidden');
+  });
+
+  // Clear group vote documents for all 3 groups across all 3 rounds
+  groupVotes = { 1: {}, 2: {}, 3: {} };
+  if (db && currentUser) {
+    for (const g of [1, 2, 3]) {
+      for (const r of [1, 2, 3]) {
+        const vRef = doc(db, 'artifacts', appId, 'public', 'data', 'rmg_votes_' + roomCode, `g${g}_r${r}`);
+        setDoc(vRef, { group: g, round: r, submitted: false, updatedAt: Date.now() }).catch(() => {});
+      }
+    }
+  }
+
+  updateUI();
+  await persistRoomPatch({
+    eff: 50,
+    bur: 20,
+    sup: 50,
+    done: { 1: false, 2: false, 3: false },
+    auditor: false,
+    breaking: false,
+    log: []
+  });
+  showToast('Game reset to initial state.');
+};
+
+$('export').onclick = () => {
+  const out = 'THE RULE-MAKING GAME — CLASS RESULTS\n\n'
+    + `Policy effectiveness: ${state.eff}/100\n`
+    + `Administrative burden: ${state.bur}/100\n`
+    + `Political support: ${state.sup}/100\n\n`
+    + 'DECISION LOG\n'
+    + state.log.map(x => '• ' + x).join('\n');
+  const blob = new Blob([out], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rule-making-game-results-${roomCode}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+// ============================================================================
+// 12. BOOTSTRAP ON WINDOW LOAD
+// ============================================================================
+window.addEventListener('load', () => {
+  if (currentRole === 'group') {
+    setupGroupView();
+  } else {
+    setupPresenterView();
+  }
+  renderTimer();
+  updateUI();
+  initFirebase();
+});
+</script>
+</body>
+</html>
