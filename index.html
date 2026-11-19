@@ -53,30 +53,30 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
  <div class="topline"><div><h1>The Rule-Making Game</h1><p>When does governing through rules turn into governing through red tape — and who bears the costs?</p></div><span class="pill" id="roundPill">Setup · 00:00</span></div>
 </header>
 <main>
- <!-- HOST / SPECIAL ROLES DASHBOARD -->
+ <!-- HOST DASHBOARD -->
  <div id="hostDashboard" class="grid">
   <section class="card span12">
    <div class="eyebrow">Multiplayer QR Code Generator & Live Status</div>
    <h2>Separate Group Links & Live Monitoring</h2>
-   <p>Her grup kendi cihazından sadece kendi ekranına erişir. Aşağıdaki 3 ayrı QR kodu 3 farklı gruba okutun.</p>
+   <p>Scan each QR code with the respective group's device. Each group gets an isolated interface.</p>
    <div class="qr-container">
     <div class="qr-box">
-     <h4>Grup 1: Politicians</h4>
-     <p class="small muted">Rounds 1 & 3 Karar Yetkilisi</p>
+     <h4>Group 1: Politicians</h4>
+     <p class="small muted">Rounds 1 & 3 Decisions</p>
      <div id="qrcode1" class="qrcode"></div>
-     <p class="small" id="statusG1">Durum: Bekliyor...</p>
+     <p class="small" id="statusG1">Status: Waiting...</p>
     </div>
     <div class="qr-box">
-     <h4>Grup 2: Bureaucracy</h4>
-     <p class="small muted">Round 2 Uygulama Kuralları</p>
+     <h4>Group 2: Bureaucracy</h4>
+     <p class="small muted">Round 2 Implementation Rules</p>
      <div id="qrcode2" class="qrcode"></div>
-     <p class="small" id="statusG2">Durum: Bekliyor...</p>
+     <p class="small" id="statusG2">Status: Waiting...</p>
     </div>
     <div class="qr-box">
-     <h4>Grup 3: Organized Interests</h4>
-     <p class="small muted">Paydaş ve Sektör Oylaması</p>
+     <h4>Group 3: Organized Interests</h4>
+     <p class="small muted">Stakeholder Lobbying & Oversight</p>
      <div id="qrcode3" class="qrcode"></div>
-     <p class="small" id="statusG3">Durum: Bekliyor...</p>
+     <p class="small" id="statusG3">Status: Waiting...</p>
     </div>
    </div>
   </section>
@@ -102,7 +102,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
   <div class="card span12" style="margin-bottom: 20px;">
    <div class="eyebrow" id="groupTitleTag">Student Group View</div>
    <h2 id="groupHeading">Group Portal</h2>
-   <p id="groupDesc">Kendi grubunuza özel kararları buradan verin. Diğer grupların kararları ve ekranları sizden bağımsızdır.</p>
+   <p id="groupDesc">Submit your group decisions here independently from other teams.</p>
   </div>
  </div>
 
@@ -193,7 +193,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
    <div class="statrow">
     <div class="stat"><span>Policy effectiveness</span><strong id="feff">50</strong><div class="bar"><i id="feffbar" style="width:50%;background:var(--green)"></i></div></div>
     <div class="stat"><span>Administrative burden</span><strong id="fbur">20</strong><div class="bar"><i id="fburbar" style="width:20%;background:var(--red)"></i></div></div>
-    <div class="stat"><span>Political support</span><strong id="fsup">50</strong><div class="bar"><i id="fsupbar" style="width:50%;background:var(--accent)"></i></div></div>
+    <div class="stat"><span>Political support</span><strong id="sup">50</strong><div class="bar"><i id="supbar" style="width:50%;background:var(--accent)"></i></div></div>
    </div>
    <div id="interpretation" class="notice success" style="margin-top:18px">Complete the three rounds to generate the class outcome.</div>
    <h3>Decision record</h3><div id="log" class="small muted">No decisions submitted yet.</div>
@@ -216,14 +216,13 @@ if(currentGroup){
  $('groupHeading').textContent = `Group ${currentGroup} Control Panel`;
  
  if(currentGroup === '1'){
-  $('groupDesc').textContent = "Siz Politicians (Politikacılar) grubusunuz. Round 1 ve Round 3 kararlarından sorumlusunuz.";
+  $('groupDesc').textContent = "You are the Politicians group. You are responsible for Round 1 and Round 3 decisions.";
  } else if(currentGroup === '2'){
-  $('groupDesc').textContent = "Siz Regulatory Bureaucracy (Bürokrasi) grubusunuz. Round 2 uygulama kurallarından sorumlusunuz.";
+  $('groupDesc').textContent = "You are the Regulatory Bureaucracy group. You are responsible for Round 2 implementation rules.";
  } else if(currentGroup === '3'){
-  $('groupDesc').textContent = "Siz Organized Interests (Paydaşlar) grubusunuz. Sektörel oylamalar ve etki denetiminden sorumlusunuz.";
+  $('groupDesc').textContent = "You are the Organized Interests group. You represent stakeholder lobbying and oversight.";
  }
 } else {
- // Temiz base URL'i al ve her QR koduna özel group parametresini ekle
  let cleanUrl = window.location.href.split('?')[0].split('#')[0];
  if(!cleanUrl.endsWith('/')) cleanUrl += '/';
  
@@ -241,9 +240,9 @@ function update(){
  if($('log')) $('log').innerHTML=state.log.length?state.log.map(x=>`<p>• ${x}</p>`).join(''):'No decisions submitted yet.';
  
  if(!currentGroup){
-  if($('statusG1')) $('statusG1').textContent = state.g1Done ? "Durum: Oy Verildi ✅" : "Durum: Bekliyor...";
-  if($('statusG2')) $('statusG2').textContent = state.g2Done ? "Durum: Oy Verildi ✅" : "Durum: Bekliyor...";
-  if($('statusG3')) $('statusG3').textContent = state.g3Done ? "Durum: Oy Verildi ✅" : "Durum: Bekliyor...";
+  if($('statusG1')) $('statusG1').textContent = state.g1Done ? "Status: Submitted ✅" : "Status: Waiting...";
+  if($('statusG2')) $('statusG2').textContent = state.g2Done ? "Status: Submitted ✅" : "Status: Waiting...";
+  if($('statusG3')) $('statusG3').textContent = state.g3Done ? "Status: Submitted ✅" : "Status: Waiting...";
  }
 }
 
@@ -300,8 +299,21 @@ function useBreaking(){
 
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
- document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));$(b.dataset.tab).classList.remove('hidden');
+ document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));$(b.dataset.tab).classList.add('hidden'); // fix hidden toggle
+ // fix tab switching logic:
+ document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));
+ $(b.dataset.tab).classList.remove('hidden');
 }));
+
+// Quick fix tab toggle logic cleanly
+document.querySelectorAll('[data-tab]').forEach(b=>{
+ b.onclick = () => {
+  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(b.dataset.tab).classList.remove('hidden');
+ };
+});
 
 setInterval(update, 1000); 
 update();
