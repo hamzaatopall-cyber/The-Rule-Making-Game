@@ -58,7 +58,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
   <section class="card span12">
    <div class="eyebrow">Multiplayer QR Code Generator & Live Status</div>
    <h2>Separate Group Links & Live Monitoring</h2>
-   <p>Her grup kendi cihazından sadece kendi ekranına erişir. Aşağıdaki 3 ayrı QR kodu 3 farklı gruba okutun. Canlı durumlar ve oylamalar bu ekranda anlık olarak toplanır.</p>
+   <p>Her grup kendi cihazından sadece kendi ekranına erişir. Aşağıdaki 3 ayrı QR kodu 3 farklı gruba okutun.</p>
    <div class="qr-container">
     <div class="qr-box">
      <h4>Grup 1: Politicians</h4>
@@ -97,7 +97,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
   </section>
  </div>
 
- <!-- STUDENT GROUP VIEW (Hidden by default unless ?group=1, 2 or 3) -->
+ <!-- STUDENT GROUP VIEW -->
  <div id="studentDashboard" class="hidden">
   <div class="card span12" style="margin-bottom: 20px;">
    <div class="eyebrow" id="groupTitleTag">Student Group View</div>
@@ -203,34 +203,33 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 </main>
 <script>
 const urlParams = new URLSearchParams(window.location.search);
-const currentGroup = urlParams.get('group'); // '1', '2', '3' veya null (Host)
+const currentGroup = urlParams.get('group'); 
 let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, done:{1:false,2:false,3:false}, auditor:false, breaking:false, log:[], g1Done:false, g2Done:false, g3Done:false};
-let seconds = 1200, interval = null;
 const $ = id => document.getElementById(id);
 
 function saveState(){ localStorage.setItem('rmg_state', JSON.stringify(state)); }
 function loadState(){ let s = localStorage.getItem('rmg_state'); if(s) state = JSON.parse(s); }
 
-// Rol Kısıtlamaları ve Görünüm Ayarı
 if(currentGroup){
  $('hostDashboard').classList.add('hidden');
  $('modeIndicator').textContent = `Group ${currentGroup} Portal (Isolated)`;
  $('groupHeading').textContent = `Group ${currentGroup} Control Panel`;
  
- // Yetki bazlı kilitler
  if(currentGroup === '1'){
   $('groupDesc').textContent = "Siz Politicians (Politikacılar) grubusunuz. Round 1 ve Round 3 kararlarından sorumlusunuz.";
  } else if(currentGroup === '2'){
   $('groupDesc').textContent = "Siz Regulatory Bureaucracy (Bürokrasi) grubusunuz. Round 2 uygulama kurallarından sorumlusunuz.";
  } else if(currentGroup === '3'){
-  $('groupDesc').textContent = "Siz Organized Interests (Paydaşlar) grubusunuz. Tüm turlarda ortak etki ve öneri hakkına sahipsiniz.";
+  $('groupDesc').textContent = "Siz Organized Interests (Paydaşlar) grubusunuz. Sektörel oylamalar ve etki denetiminden sorumlusunuz.";
  }
 } else {
- // Host (Siz ve arkadaşınız) için QR kodları üret
- let baseUrl = window.location.href.split('?')[0];
- new QRCode(document.getElementById("qrcode1"), {text: baseUrl + "?group=1", width: 128, height: 128});
- new QRCode(document.getElementById("qrcode2"), {text: baseUrl + "?group=2", width: 128, height: 128});
- new QRCode(document.getElementById("qrcode3"), {text: baseUrl + "?group=3", width: 128, height: 128});
+ // Temiz base URL'i al ve her QR koduna özel group parametresini ekle
+ let cleanUrl = window.location.href.split('?')[0].split('#')[0];
+ if(!cleanUrl.endsWith('/')) cleanUrl += '/';
+ 
+ new QRCode(document.getElementById("qrcode1"), {text: cleanUrl + "?group=1", width: 128, height: 128});
+ new QRCode(document.getElementById("qrcode2"), {text: cleanUrl + "?group=2", width: 128, height: 128});
+ new QRCode(document.getElementById("qrcode3"), {text: cleanUrl + "?group=3", width: 128, height: 128});
 }
 
 function clamp(n){return Math.max(0,Math.min(100,n))}
@@ -304,7 +303,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));$(b.dataset.tab).classList.remove('hidden');
 }));
 
-setInterval(update, 1000); // Canlı senkronizasyon için her saniye veriyi tazele
+setInterval(update, 1000); 
 update();
 </script>
 </body>
