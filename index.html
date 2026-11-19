@@ -3,78 +3,57 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Rule-Making Game - Multiplayer Control Hub</title>
+<title>The Rule-Making Game - Host Hub</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#33445b;--text:#edf3fa;--muted:#a9b8ca;--accent:#83b7ff;--green:#6fd3a5;--red:#ff927e;--yellow:#f4ca72}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#101722,#172437);color:var(--text);font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
-header{padding:26px max(20px,calc((100% - 1100px)/2));border-bottom:1px solid var(--line);background:#111b29dd;position:sticky;top:0;z-index:4;backdrop-filter:blur(10px)}
+:root{--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#33445b;--text:#edf3fa;--muted:#a9b8ca;--accent:#83b7ff;--green:#6fd3a5;--red:#ff927e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#101722,#172437);color:var(--text);font:16px/1.5 Inter,sans-serif}
+header{padding:26px max(20px,calc((100% - 1100px)/2));border-bottom:1px solid var(--line);background:#111b29dd}
 .kicker{color:var(--accent);font-size:.75rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
-h1{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.08;margin:5px 0 8px}h2{font-size:1.35rem;margin:0 0 10px}h3{font-size:1rem;margin:0 0 7px}
-p{margin:7px 0;color:var(--muted)}main{max-width:1100px;margin:24px auto;padding:0 18px 70px}
-.topline{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-.pill{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:5px 11px;color:var(--muted);font-size:.8rem}
-.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}
-button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 14px;transition:.15s}
-button:hover{border-color:var(--accent);transform:translateY(-1px)}button:disabled{opacity:.4;cursor:not-allowed;transform:none}
-button.primary{background:var(--accent);color:#102033;border-color:var(--accent);font-weight:800}
-button.good{border-color:#39795e;background:#183a31}button.warn{border-color:#805e2b;background:#3c3020}
-button.active{background:#29476a;border-color:var(--accent)}
+h1{font-size:clamp(1.8rem,5vw,2.8rem);margin:5px 0 8px}main{max-width:1100px;margin:24px auto;padding:0 18px 70px}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
-.card{background:linear-gradient(160deg,var(--panel),#172334);border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 12px 28px #0002}
-.span12{grid-column:span 12}.span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}
-@media(max-width:760px){.span8,.span6,.span4{grid-column:span 12}header{position:static}}
-.muted{color:var(--muted)}.small{font-size:.85rem}.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.card{background:linear-gradient(160deg,var(--panel),#172334);border:1px solid var(--line);border-radius:17px;padding:18px}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span4{grid-column:span 4}
 .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .stat{background:#111c2a;border:1px solid var(--line);border-radius:13px;padding:12px}
-.stat strong{display:block;font-size:1.55rem;font-variant-numeric:tabular-nums}.stat span{font-size:.75rem;color:var(--muted)}
+.stat strong{display:block;font-size:1.55rem}.stat span{font-size:.75rem;color:var(--muted)}
 .bar{height:8px;background:#0d1723;border-radius:99px;overflow:hidden;margin-top:7px}.bar i{display:block;height:100%;border-radius:99px}
-.choice{display:flex;gap:10px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:#111c2a}
-.choice input{margin-top:5px;accent-color:#83b7ff;transform:scale(1.2)}.choice b{display:block}.choice span{color:var(--muted);font-size:.86rem}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
-.notice{border-left:3px solid var(--yellow);padding:10px 13px;background:#332c20;border-radius:0 10px 10px 0;color:#f4e4c2;margin:12px 0}
-.success{border-left-color:var(--green);background:#18352e;color:#c9f2df}
-.danger{border-left-color:var(--red);background:#3b2427;color:#ffd8d1}
-.hidden{display:none!important}.rolehead{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.tag{font-size:.72rem;border-radius:99px;padding:4px 8px;background:#29476a;color:#cfe4ff}
-.timer{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
-input[type=text],textarea{width:100%;background:#101b29;border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--text);font:inherit}
-footer{color:var(--muted);font-size:.78rem;text-align:center;padding:24px}
-hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 .qr-container{display:flex;gap:20px;flex-wrap:wrap;margin-top:15px}
 .qr-box{background:#111c2a;border:1px solid var(--line);border-radius:13px;padding:15px;text-align:center;flex:1;min-width:220px}
 .qr-box h4{margin:0 0 10px;color:var(--accent)}
 .qrcode{background:white;padding:10px;display:inline-block;border-radius:8px;margin-bottom:10px}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 14px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
 </style>
 </head>
 <body>
 <header>
- <div class="kicker" id="modeIndicator">Main Facilitator Hub · Special Roles</div>
- <div class="topline"><div><h1>The Rule-Making Game</h1><p>When does governing through rules turn into governing through red tape — and who bears the costs?</p></div><span class="pill" id="roundPill">Setup · 00:00</span></div>
+ <div class="kicker">Main Facilitator Hub · Host Screen</div>
+ <div class="topline"><div><h1>The Rule-Making Game</h1><p>Real-time monitoring and separate group QR codes.</p></div></div>
 </header>
 <main>
- <!-- HOST DASHBOARD -->
- <div id="hostDashboard" class="grid">
+ <div class="grid">
   <section class="card span12">
    <div class="eyebrow">Multiplayer QR Code Generator & Live Status</div>
-   <h2>Separate Group Links & Live Monitoring</h2>
-   <p>Scan each QR code with the respective group's device. Each group gets an isolated interface.</p>
+   <h2>Scan Group Devices</h2>
+   <p>Each group scans their respective QR code to access their fully independent control panel.</p>
    <div class="qr-container">
     <div class="qr-box">
      <h4>Group 1: Politicians</h4>
-     <p class="small muted">Rounds 1 & 3 Decisions</p>
+     <p class="small" style="color:var(--muted)">Rounds 1 & 3 Decisions</p>
      <div id="qrcode1" class="qrcode"></div>
      <p class="small" id="statusG1">Status: Waiting...</p>
     </div>
     <div class="qr-box">
      <h4>Group 2: Bureaucracy</h4>
-     <p class="small muted">Round 2 Implementation Rules</p>
+     <p class="small" style="color:var(--muted)">Round 2 Implementation</p>
      <div id="qrcode2" class="qrcode"></div>
      <p class="small" id="statusG2">Status: Waiting...</p>
     </div>
     <div class="qr-box">
      <h4>Group 3: Organized Interests</h4>
-     <p class="small muted">Stakeholder Lobbying & Oversight</p>
+     <p class="small" style="color:var(--muted)">Stakeholder Oversight</p>
      <div id="qrcode3" class="qrcode"></div>
      <p class="small" id="statusG3">Status: Waiting...</p>
     </div>
@@ -82,241 +61,44 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
   </section>
 
   <section class="card span8">
-   <div class="eyebrow">Scenario</div><h2>The Municipal Housing Safety Crisis</h2>
+   <div class="eyebrow">Scenario Outcomes</div>
+   <h2>Live Simulation Metrics</h2>
    <div class="statrow">
     <div class="stat"><span>Policy effectiveness</span><strong id="eff">50</strong><div class="bar"><i id="effbar" style="width:50%;background:var(--green)"></i></div></div>
     <div class="stat"><span>Administrative burden</span><strong id="bur">20</strong><div class="bar"><i id="burbar" style="width:20%;background:var(--red)"></i></div></div>
     <div class="stat"><span>Political support</span><strong id="sup">50</strong><div class="bar"><i id="supbar" style="width:50%;background:var(--accent)"></i></div></div>
    </div>
+   <h3 style="margin-top:20px">Decision Log</h3>
+   <div id="log" style="color:var(--muted);font-size:0.9rem">No decisions submitted yet.</div>
   </section>
+
   <section class="card span4">
-   <div class="eyebrow">Facilitator timer</div><div class="timer" id="timer">20:00</div>
-   <div class="actions"><button class="primary" id="startTimer">Start timer</button><button id="pauseTimer">Pause</button><button id="resetTimer">Reset</button></div>
-   <hr><div class="eyebrow">Game controls</div>
-   <div class="actions"><button id="resetGame">Reset game</button><button id="export">Download results</button></div>
+   <div class="eyebrow">Controls</div>
+   <h2>Game Management</h2>
+   <div class="actions">
+    <button onclick="localStorage.clear();location.reload();" style="background:#3b2427;border-color:var(--red)">Reset Game State</button>
+   </div>
   </section>
  </div>
-
- <!-- STUDENT GROUP VIEW -->
- <div id="studentDashboard" class="hidden">
-  <div class="card span12" style="margin-bottom: 20px;">
-   <div class="eyebrow" id="groupTitleTag">Student Group View</div>
-   <h2 id="groupHeading">Group Portal</h2>
-   <p id="groupDesc">Submit your group decisions here independently from other teams.</p>
-  </div>
- </div>
-
- <nav class="tabs" aria-label="Game sections">
-  <button class="active" data-tab="round1">1 · Political decision</button>
-  <button data-tab="round2">2 · Implementation</button>
-  <button data-tab="round3">3 · Backlash</button>
-  <button data-tab="special">Special roles</button>
-  <button data-tab="results">Final results</button>
- </nav>
-
- <section id="round1" class="tabview">
-  <div class="grid">
-   <div class="card span8">
-    <div class="rolehead"><div><div class="eyebrow">Round 1 · 4 minutes</div><h2>Political pressure: the public demands action</h2></div><span class="tag">High public salience</span></div>
-    <p>Government must choose an initial policy response.</p>
-    <h3>Politicians: select the policy proposal</h3>
-    <label class="choice"><input type="radio" name="r1" value="strict"><div><b>A · Strict inspections for all buildings</b><span>Strong visible response. Broad coverage, high implementation and compliance costs.</span></div></label>
-    <label class="choice"><input type="radio" name="r1" value="risk"><div><b>B · Risk-based inspections</b><span>Prioritise older and higher-risk buildings. Requires technical assessment and reliable data.</span></div></label>
-    <label class="choice"><input type="radio" name="r1" value="voluntary"><div><b>C · Voluntary certification and incentives</b><span>Lower immediate burden, but relies on uptake and may leave unsafe buildings untouched.</span></div></label>
-    <div class="actions"><button class="primary" id="submitR1" onclick="submitRound(1)">Submit government decision</button></div>
-    <div id="r1feedback" class="notice hidden"></div>
-   </div>
-   <div class="card span4">
-    <div class="eyebrow">Group mandates</div>
-    <h3>Politicians</h3><p class="small">Protect public support and deliver a visible response.</p>
-    <h3>Regulatory bureaucracy</h3><p class="small">Explain what can realistically be implemented.</p>
-    <h3>Organized interests</h3><p class="small">Business lobby seeks manageable costs; tenants seek safety.</p>
-   </div>
-  </div>
- </section>
-
- <section id="round2" class="tabview hidden">
-  <div class="grid">
-   <div class="card span8">
-    <div class="eyebrow">Round 2 · 6 minutes</div><h2>Implementation: rules begin to multiply</h2>
-    <p>The policy now reaches the regulatory agency. Select the procedures to introduce.</p>
-    <label class="choice"><input type="checkbox" name="rules" value="inspection"><div><b>1 · Technical safety inspection certificate</b><span>Documents whether buildings meet safety standards.</span></div></label>
-    <label class="choice"><input type="checkbox" name="rules" value="duplicate"><div><b>2 · Three separate copies of the same certificate</b><span>Adds repetition and processing costs.</span></div></label>
-    <label class="choice"><input type="checkbox" name="rules" value="annual"><div><b>3 · Annual compliance report</b><span>Supports monitoring, requires recurring reporting.</span></div></label>
-    <label class="choice"><input type="checkbox" name="rules" value="income"><div><b>4 · Additional income documentation</b><span>Can make access harder for vulnerable tenants.</span></div></label>
-    <div class="actions"><button class="primary" id="submitR2" onclick="submitRound(2)">Submit implementation rules</button></div>
-    <div id="r2feedback" class="notice hidden"></div>
-   </div>
-   <div class="card span4">
-    <div class="eyebrow">Special intervention</div><h3>Administrative Burden Auditor</h3>
-    <button class="warn" onclick="useAuditor()">Use Burden Alert</button>
-    <div id="auditorStatus" class="notice hidden"></div>
-   </div>
-  </div>
- </section>
-
- <section id="round3" class="tabview hidden">
-  <div class="grid">
-   <div class="card span8">
-    <div class="eyebrow">Round 3 · 5 minutes</div><h2>The backlash: is this still effective regulation?</h2>
-    <h3>Politicians: choose the final response</h3>
-    <label class="choice"><input type="radio" name="r3" value="enforce"><div><b>A · Keep all rules and increase enforcement</b><span>Signals resolve, intensifies burdens.</span></div></label>
-    <label class="choice"><input type="radio" name="r3" value="simplify"><div><b>B · Simplify procedures and remove selected rules</b><span>Reduces burdens, may weaken oversight.</span></div></label>
-    <label class="choice"><input type="radio" name="r3" value="protect"><div><b>C · Keep safety standards, add exemptions and support</b><span>Preserves core protections while addressing unequal costs.</span></div></label>
-    <div class="actions"><button class="primary" id="submitR3" onclick="submitRound(3)">Submit final decision</button></div>
-    <div id="r3feedback" class="notice hidden"></div>
-   </div>
-   <div class="card span4">
-    <div class="eyebrow">Special intervention</div><h3>Media and Political Pressure</h3>
-    <button class="warn" onclick="useBreaking()">Play Breaking News</button>
-    <div id="breakingStatus" class="notice hidden"></div>
-   </div>
-  </div>
- </section>
-
- <section id="special" class="tabview hidden">
-  <div class="grid">
-   <div class="card span6">
-    <div class="eyebrow">Presenter role 1</div><h2>Administrative Burden Auditor</h2>
-    <button class="warn" onclick="useAuditor()">Use Burden Alert</button>
-   </div>
-   <div class="card span6">
-    <div class="eyebrow">Presenter role 2</div><h2>Media and Political Pressure</h2>
-    <button class="warn" onclick="useBreaking()">Play Breaking News</button>
-   </div>
-  </div>
- </section>
-
- <section id="results" class="tabview hidden">
-  <div class="card">
-   <div class="eyebrow">Debrief · 3 minutes</div><h2>Final policy outcome</h2>
-   <div class="statrow">
-    <div class="stat"><span>Policy effectiveness</span><strong id="feff">50</strong><div class="bar"><i id="feffbar" style="width:50%;background:var(--green)"></i></div></div>
-    <div class="stat"><span>Administrative burden</span><strong id="fbur">20</strong><div class="bar"><i id="fburbar" style="width:20%;background:var(--red)"></i></div></div>
-    <div class="stat"><span>Political support</span><strong id="sup">50</strong><div class="bar"><i id="supbar" style="width:50%;background:var(--accent)"></i></div></div>
-   </div>
-   <div id="interpretation" class="notice success" style="margin-top:18px">Complete the three rounds to generate the class outcome.</div>
-   <h3>Decision record</h3><div id="log" class="small muted">No decisions submitted yet.</div>
-  </div>
- </section>
- <footer>Multiplayer Classroom Simulation · Independent Group Channels</footer>
 </main>
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const currentGroup = urlParams.get('group'); 
-let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, done:{1:false,2:false,3:false}, auditor:false, breaking:false, log:[], g1Done:false, g2Done:false, g3Done:false};
-const $ = id => document.getElementById(id);
+let cleanUrl = window.location.href.split('?')[0].split('#')[0];
+if(!cleanUrl.endsWith('/')) cleanUrl = cleanUrl.substring(0, cleanUrl.lastIndexOf('/') + 1);
 
-function saveState(){ localStorage.setItem('rmg_state', JSON.stringify(state)); }
-function loadState(){ let s = localStorage.getItem('rmg_state'); if(s) state = JSON.parse(s); }
+new QRCode(document.getElementById("qrcode1"), {text: cleanUrl + "group1.html", width: 128, height: 128});
+new QRCode(document.getElementById("qrcode2"), {text: cleanUrl + "group2.html", width: 128, height: 128});
+new QRCode(document.getElementById("qrcode3"), {text: cleanUrl + "group3.html", width: 128, height: 128});
 
-if(currentGroup){
- $('hostDashboard').classList.add('hidden');
- $('modeIndicator').textContent = `Group ${currentGroup} Portal (Isolated)`;
- $('groupHeading').textContent = `Group ${currentGroup} Control Panel`;
- 
- if(currentGroup === '1'){
-  $('groupDesc').textContent = "You are the Politicians group. You are responsible for Round 1 and Round 3 decisions.";
- } else if(currentGroup === '2'){
-  $('groupDesc').textContent = "You are the Regulatory Bureaucracy group. You are responsible for Round 2 implementation rules.";
- } else if(currentGroup === '3'){
-  $('groupDesc').textContent = "You are the Organized Interests group. You represent stakeholder lobbying and oversight.";
- }
-} else {
- let cleanUrl = window.location.href.split('?')[0].split('#')[0];
- if(!cleanUrl.endsWith('/')) cleanUrl += '/';
- 
- new QRCode(document.getElementById("qrcode1"), {text: cleanUrl + "?group=1", width: 128, height: 128});
- new QRCode(document.getElementById("qrcode2"), {text: cleanUrl + "?group=2", width: 128, height: 128});
- new QRCode(document.getElementById("qrcode3"), {text: cleanUrl + "?group=3", width: 128, height: 128});
+function updateHost(){
+ let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, log:[], g1Done:false, g2Done:false, g3Done:false};
+ ['eff','bur','sup'].forEach(k=>{if(document.getElementById(k))document.getElementById(k).textContent=state[k];if(document.getElementById(k+'bar'))document.getElementById(k+'bar').style.width=state[k]+'%'});
+ document.getElementById('statusG1').textContent = state.g1Done ? "Status: Submitted ✅" : "Status: Waiting...";
+ document.getElementById('statusG2').textContent = state.g2Done ? "Status: Submitted ✅" : "Status: Waiting...";
+ document.getElementById('statusG3').textContent = state.g3Done ? "Status: Submitted ✅" : "Status: Waiting...";
+ document.getElementById('log').innerHTML = state.log.length ? state.log.map(x=>`<p>• ${x}</p>`).join('') : 'No decisions submitted yet.';
 }
-
-function clamp(n){return Math.max(0,Math.min(100,n))}
-function update(){
- loadState();
- ['eff','bur','sup'].forEach(k=>{if($(k))$(k).textContent=state[k];if($(k+'bar'))$(k+'bar').style.width=state[k]+'%'});
- ['eff','bur','sup'].forEach(k=>{if($('f'+k))$('f'+k).textContent=state[k];if($('f'+k+'bar'))$('f'+k+'bar').style.width=state[k]+'%'});
- if($('roundPill')) $('roundPill').textContent=Object.values(state.done).filter(Boolean).length===3?'Game complete':`Rounds completed · ${Object.values(state.done).filter(Boolean).length}/3`;
- if($('log')) $('log').innerHTML=state.log.length?state.log.map(x=>`<p>• ${x}</p>`).join(''):'No decisions submitted yet.';
- 
- if(!currentGroup){
-  if($('statusG1')) $('statusG1').textContent = state.g1Done ? "Status: Submitted ✅" : "Status: Waiting...";
-  if($('statusG2')) $('statusG2').textContent = state.g2Done ? "Status: Submitted ✅" : "Status: Waiting...";
-  if($('statusG3')) $('statusG3').textContent = state.g3Done ? "Status: Submitted ✅" : "Status: Waiting...";
- }
-}
-
-function change(e,b,s,why){
- state.eff=clamp(state.eff+e); state.bur=clamp(state.bur+b); state.sup=clamp(state.sup+s);
- state.log.push(why); saveState(); update();
-}
-
-function feedback(id,msg,kind=''){let el=$(id);if(!el)return;el.textContent=msg;el.classList.remove('hidden','success','danger');if(kind)el.classList.add(kind)}
-
-function submitRound(n){
- loadState();
- if(state.done[n]){alert('This round has already been submitted.');return}
- 
- if(n===1){
-  let v=document.querySelector('input[name="r1"]:checked');if(!v){alert('Choose a policy first.');return}
-  let m={strict:[15,12,5,'Round 1 (Politicians): universal strict inspections'],risk:[12,4,8,'Round 1 (Politicians): risk-based inspections'],voluntary:[4,1,2,'Round 1 (Politicians): voluntary certification']}[v.value];
-  change(...m); feedback('r1feedback','Decision recorded successfully.','success');
-  state.g1Done = true;
- }
- if(n===2){
-  let vs=[...document.querySelectorAll('input[name="rules"]:checked')].map(x=>x.value);if(!vs.length){alert('Select at least one implementation rule.');return}
-  let e=0,b=0,s=0,labels=[];
-  vs.forEach(v=>{let d={inspection:[8,5,0,'Safety inspection certificate'],duplicate:[0,15,-4,'Three copies of certificate'],annual:[3,7,-1,'Annual compliance report'],income:[1,9,-5,'Additional income docs']}[v];e+=d[0];b+=d[1];s+=d[2];labels.push(d[3])});
-  if(vs.length>2){b+=5;labels.push('Capacity strain')}
-  change(e,b,s,'Round 2 (Bureaucracy): '+labels.join('; '));
-  feedback('r2feedback','Implementation rules recorded.','success');
-  state.g2Done = true;
- }
- if(n===3){
-  let v=document.querySelector('input[name="r3"]:checked');if(!v){alert('Choose a final response.');return}
-  let m={enforce:[8,12,-8,'Round 3 (Politicians): enforce all'],simplify:[-4,-13,3,'Round 3 (Politicians): simplify'],protect:[7,-6,9,'Round 3 (Politicians): standards and support']}[v.value];
-  change(...m); feedback('r3feedback','Final decision recorded.','success');
-  state.g3Done = true;
- }
- state.done[n]=true; saveState(); update();
-}
-
-function useAuditor(){
- loadState();
- if(state.auditor){alert('Burden Alert already used.');return}
- state.auditor=true; state.bur=clamp(state.bur-5); state.sup=clamp(state.sup+2);
- state.log.push('Auditor intervention: burden reduced by 5.');
- saveState(); update(); alert('Burden Alert activated! Burden -5.');
-}
-
-function useBreaking(){
- loadState();
- if(state.breaking){alert('Breaking News already played.');return}
- state.breaking=true; state.sup=clamp(state.sup-8);
- state.log.push('Breaking News: political support -8.');
- saveState(); update(); alert('Breaking News played! Support -8.');
-}
-
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
- document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
- document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));$(b.dataset.tab).classList.add('hidden'); // fix hidden toggle
- // fix tab switching logic:
- document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));
- $(b.dataset.tab).classList.remove('hidden');
-}));
-
-// Quick fix tab toggle logic cleanly
-document.querySelectorAll('[data-tab]').forEach(b=>{
- b.onclick = () => {
-  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  document.querySelectorAll('.tabview').forEach(x=>x.classList.add('hidden'));
-  document.getElementById(b.dataset.tab).classList.remove('hidden');
- };
-});
-
-setInterval(update, 1000); 
-update();
+setInterval(updateHost, 1000);
+updateHost();
 </script>
 </body>
 </html>
