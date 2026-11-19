@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group 2: Bureaucracy Portal</title>
+<style>
+:root{--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#33445b;--text:#edf3fa;--muted:#a9b8ca;--accent:#83b7ff;--green:#6fd3a5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#101722,#172437);color:var(--text);font:16px/1.5 Inter,sans-serif}
+header{padding:20px;border-bottom:1px solid var(--line);background:#111b29dd}
+main{max-width:800px;margin:20px auto;padding:0 15px 50px}
+.card{background:linear-gradient(160deg,var(--panel),#172334);border:1px solid var(--line);border-radius:17px;padding:20px;margin-bottom:15px}
+.choice{display:flex;gap:10px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:#111c2a}
+.choice input{margin-top:5px;transform:scale(1.2)}
+button.primary{background:var(--accent);color:#102033;border:none;font-weight:800;border-radius:11px;padding:12px 18px;cursor:pointer}
+.notice{padding:12px;background:#18352e;color:#c9f2df;border-radius:8px;margin-top:10px}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:800}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow">Isolated Student Portal</div>
+<h2>Group 2: Regulatory Bureaucracy Panel</h2>
+</header>
+<main>
+ <div class="card">
+  <h3>Round 2 · Implementation Rules</h3>
+  <p style="color:var(--muted)">Select regulatory procedures to introduce:</p>
+  <label class="choice"><input type="checkbox" name="rules" value="inspection"><div><b>1 · Technical safety inspection certificate</b><span>Standard verification.</span></div></label>
+  <label class="choice"><input type="checkbox" name="rules" value="duplicate"><div><b>2 · Three separate copies of certificate</b><span>Adds procedural friction.</span></div></label>
+  <label class="choice"><input type="checkbox" name="rules" value="annual"><div><b>3 · Annual compliance report</b><span>Requires recurring monitoring.</span></div></label>
+  <label class="choice"><input type="checkbox" name="rules" value="income"><div><b>4 · Additional income documentation</b><span>Complicates access for tenants.</span></div></label>
+  <button class="primary" onclick="submitR2()" style="margin-top:15px">Submit Implementation Rules</button>
+  <div id="msg2" style="display:none" class="notice">Implementation rules submitted successfully!</div>
+ </div>
+</main>
+<script>
+function clamp(n){return Math.max(0,Math.min(100,n))}
+function submitR2(){
+ let vs=[...document.querySelectorAll('input[name="rules"]:checked')].map(x=>x.value); if(!vs.length){alert('Select at least one rule.');return;}
+ let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, log:[], g1Done:false, g2Done:false, g3Done:false};
+ if(state.g2Done){alert('Already submitted!');return;}
+ let e=0,b=0,s=0,labels=[];
+ vs.forEach(v=>{let d={inspection:[8,5,0,'Safety certificate'],duplicate:[0,15,-4,'Triple copies'],annual:[3,7,-1,'Annual report'],income:[1,9,-5,'Income docs']}[v];e+=d[0];b+=d[1];s+=d[2];labels.push(d[3])});
+ if(vs.length>2){b+=5;labels.push('Capacity strain')}
+ state.eff=clamp(state.eff+e); state.bur=clamp(state.bur+b); state.sup=clamp(state.sup+s);
+ state.log.push('Round 2 (Bureaucracy): '+labels.join('; '));
+ state.g2Done = true;
+ localStorage.setItem('rmg_state', JSON.stringify(state));
+ document.getElementById('msg2').style.display='block';
+}
+</script>
+</body>
+</html>
