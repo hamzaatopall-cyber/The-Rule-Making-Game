@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group 1: Politicians Portal</title>
+<style>
+:root{--bg:#101722;--panel:#192536;--panel2:#202f43;--line:#33445b;--text:#edf3fa;--muted:#a9b8ca;--accent:#83b7ff;--green:#6fd3a5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#101722,#172437);color:var(--text);font:16px/1.5 Inter,sans-serif}
+header{padding:20px;border-bottom:1px solid var(--line);background:#111b29dd}
+main{max-width:800px;margin:20px auto;padding:0 15px 50px}
+.card{background:linear-gradient(160deg,var(--panel),#172334);border:1px solid var(--line);border-radius:17px;padding:20px;margin-bottom:15px}
+.choice{display:flex;gap:10px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:12px;margin:9px 0;background:#111c2a}
+.choice input{margin-top:5px;transform:scale(1.2)}
+button.primary{background:var(--accent);color:#102033;border:none;font-weight:800;border-radius:11px;padding:12px 18px;cursor:pointer}
+.notice{padding:12px;background:#18352e;color:#c9f2df;border-radius:8px;margin-top:10px}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:800}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow">Isolated Student Portal</div>
+<h2>Group 1: Politicians Control Panel</h2>
+</header>
+<main>
+ <div class="card">
+  <h3>Round 1 · Policy Proposal</h3>
+  <p style="color:var(--muted)">Government must choose an initial policy response for housing safety.</p>
+  <label class="choice"><input type="radio" name="r1" value="strict"><div><b>A · Strict inspections for all buildings</b><span>Strong visible response. High coverage and costs.</span></div></label>
+  <label class="choice"><input type="radio" name="r1" value="risk"><div><b>B · Risk-based inspections</b><span>Prioritise high-risk buildings efficiently.</span></div></label>
+  <label class="choice"><input type="radio" name="r1" value="voluntary"><div><b>C · Voluntary certification and incentives</b><span>Lower immediate burden, optional compliance.</span></div></label>
+  <button class="primary" onclick="submitR1()" style="margin-top:15px">Submit Round 1 Decision</button>
+  <div id="msg1" style="display:none" class="notice">Decision submitted successfully!</div>
+ </div>
+
+ <div class="card">
+  <h3>Round 3 · Backlash & Final Response</h3>
+  <p style="color:var(--muted)">Public and stakeholders react to the administrative buildup.</p>
+  <label class="choice"><input type="radio" name="r3" value="enforce"><div><b>A · Keep all rules and increase enforcement</b><span>Intensifies oversight and friction.</span></div></label>
+  <label class="choice"><input type="radio" name="r3" value="simplify"><div><b>B · Simplify procedures and remove rules</b><span>Reduces friction, eases burden.</span></div></label>
+  <label class="choice"><input type="radio" name="r3" value="protect"><div><b>C · Keep standards, add support and exemptions</b><span>Balanced targeted relief.</span></div></label>
+  <button class="primary" onclick="submitR3()" style="margin-top:15px">Submit Round 3 Decision</button>
+  <div id="msg3" style="display:none" class="notice">Final decision submitted successfully!</div>
+ </div>
+</main>
+<script>
+function clamp(n){return Math.max(0,Math.min(100,n))}
+function submitR1(){
+ let v=document.querySelector('input[name="r1"]:checked'); if(!v){alert('Please select a policy.');return;}
+ let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, log:[], g1Done:false, g2Done:false, g3Done:false};
+ if(state.g1Done){alert('Already submitted!');return;}
+ let m = {strict:[15,12,5,'Round 1 (Politicians): strict inspections'], risk:[12,4,8,'Round 1 (Politicians): risk-based'], voluntary:[4,1,2,'Round 1 (Politicians): voluntary']}[v.value];
+ state.eff=clamp(state.eff+m[0]); state.bur=clamp(state.bur+m[1]); state.sup=clamp(state.sup+m[2]);
+ state.log.push(m[3]); state.g1Done = true;
+ localStorage.setItem('rmg_state', JSON.stringify(state));
+ document.getElementById('msg1').style.display='block';
+}
+function submitR3(){
+ let v=document.querySelector('input[name="r3"]:checked'); if(!v){alert('Please select a response.');return;}
+ let state = JSON.parse(localStorage.getItem('rmg_state')) || {eff:50, bur:20, sup:50, log:[], g1Done:false, g2Done:false, g3Done:false};
+ let m = {enforce:[8,12,-8,'Round 3 (Politicians): enforce all'], simplify:[-4,-13,3,'Round 3 (Politicians): simplify'], protect:[7,-6,9,'Round 3 (Politicians): standards & support']}[v.value];
+ state.eff=clamp(state.eff+m[0]); state.bur=clamp(state.bur+m[1]); state.sup=clamp(state.sup+m[2]);
+ state.log.push(m[3]);
+ localStorage.setItem('rmg_state', JSON.stringify(state));
+ document.getElementById('msg3').style.display='block';
+}
+</script>
+</body>
+</html>
